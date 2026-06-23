@@ -187,6 +187,23 @@ body{font-family:var(--font);color:var(--text);overflow:hidden;background:var(--
 .dd-menu .style-h3{font-size:14.5px;font-weight:600;color:var(--text-soft)}
 .dd-menu .style-quote{font-style:italic;color:var(--text-soft)}
 .blockLabel{min-width:76px;text-align:left}
+.dd-menu .opt-sc{margin-left:auto;font-size:11px;color:var(--text-faint);letter-spacing:.2px;padding-left:14px}
+
+/* secondary toolbar row (alignment) */
+.toolbar.subbar{border-bottom:1px solid var(--line);border-top:none;padding-top:5px;padding-bottom:5px;background:var(--glass);z-index:20}
+.toolbar.subbar .tb-group{border-right:none}
+
+/* overflow (...) menu */
+.tb-btn .ov-dots{font-size:18px;line-height:1;letter-spacing:1px}
+.overflow-menu{min-width:auto;padding:8px}
+.overflow-menu .ov-row{display:flex;gap:2px;margin-bottom:4px}
+.overflow-menu .ov-color{border-top:1px solid var(--line);margin-top:6px;padding-top:10px}
+.overflow-menu .ov-label{display:block;font-size:11px;color:var(--text-faint);margin-bottom:8px;padding-left:2px}
+
+/* hover tooltips with keyboard shortcuts */
+.tb-btn[data-tip]{position:relative}
+.tb-btn[data-tip]:hover::after{content:attr(data-tip);position:absolute;top:calc(100% + 7px);left:50%;transform:translateX(-50%);background:var(--menu);backdrop-filter:blur(20px) saturate(1.6);-webkit-backdrop-filter:blur(20px) saturate(1.6);color:var(--text);font-size:11.5px;font-weight:500;white-space:nowrap;padding:5px 9px;border-radius:8px;border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);pointer-events:none;z-index:200}
+.tb-btn[data-tip][data-sc]:hover::after{content:attr(data-tip) "  ·  " attr(data-sc)}
 
 /* color popover */
 .color-menu{min-width:auto;padding:12px}
@@ -538,66 +555,37 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
         <!-- block style -->
         <div class="tb-group">
           <div class="dd" id="blockDD">
-            <button class="tb-btn dd-toggle" title="Text style"><span class="blockLabel" id="blockLabel">Body</span><svg class="caret" viewBox="0 0 10 10"><path d="M1 3l4 4 4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></button>
+            <button class="tb-btn dd-toggle" data-tip="Text style"><span class="blockLabel" id="blockLabel">Body</span><svg class="caret" viewBox="0 0 10 10"><path d="M1 3l4 4 4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></button>
             <div class="dd-menu">
-              <button data-block="p"><span class="opt-ico">¶</span>Body</button>
-              <button data-block="h1"><span class="opt-ico">H1</span><span class="style-h1">Title</span></button>
-              <button data-block="h2"><span class="opt-ico">H2</span><span class="style-h2">Heading</span></button>
-              <button data-block="h3"><span class="opt-ico">H3</span><span class="style-h3">Subheading</span></button>
-              <button data-block="blockquote"><span class="opt-ico">❝</span><span class="style-quote">Quote</span></button>
+              <button data-block="p"><span class="opt-ico">¶</span>Body<span class="opt-sc">Ctrl+Alt+0</span></button>
+              <button data-block="h1"><span class="opt-ico">H1</span><span class="style-h1">Title</span><span class="opt-sc">Ctrl+Alt+1</span></button>
+              <button data-block="h2"><span class="opt-ico">H2</span><span class="style-h2">Heading</span><span class="opt-sc">Ctrl+Alt+2</span></button>
+              <button data-block="h3"><span class="opt-ico">H3</span><span class="style-h3">Subheading</span><span class="opt-sc">Ctrl+Alt+3</span></button>
+              <button data-block="blockquote"><span class="opt-ico">❝</span><span class="style-quote">Quote</span><span class="opt-sc">Ctrl+Alt+4</span></button>
             </div>
           </div>
         </div>
         <!-- inline -->
         <div class="tb-group">
-          <button class="tb-btn" data-cmd="bold" title="Bold"><b>B</b></button>
-          <button class="tb-btn" data-cmd="italic" title="Italic"><i>I</i></button>
-          <button class="tb-btn" data-cmd="underline" title="Underline"><u>U</u></button>
-          <button class="tb-btn" data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
-          <button class="tb-btn" data-cmd="code" title="Inline code">&lt;/&gt;</button>
-        </div>
-        <!-- color -->
-        <div class="tb-group">
-          <div class="dd" id="colorDD">
-            <button class="tb-btn dd-toggle" title="Text color"><span class="glyphA">A</span><span class="color-ind" id="colorInd"></span><svg class="caret" viewBox="0 0 10 10"><path d="M1 3l4 4 4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></button>
-            <div class="dd-menu color-menu">
-              <div class="color-grid" id="colorGrid"></div>
-              <label class="custom-color">Custom <input type="color" id="foreColor" value="#5b6cff"></label>
-            </div>
-          </div>
-          <button class="tb-btn" data-cmd="hiliteColor" title="Highlight">🖍</button>
+          <button class="tb-btn" data-cmd="bold" data-tip="Bold" data-sc="Ctrl+B"><b>B</b></button>
+          <button class="tb-btn" data-cmd="italic" data-tip="Italic" data-sc="Ctrl+I"><i>I</i></button>
+          <button class="tb-btn" data-cmd="underline" data-tip="Underline" data-sc="Ctrl+U"><u>U</u></button>
         </div>
         <!-- lists -->
         <div class="tb-group">
           <div class="dd" id="listDD">
-            <button class="tb-btn dd-toggle" title="Lists"><span style="font-size:13px">≡</span><svg class="caret" viewBox="0 0 10 10"><path d="M1 3l4 4 4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></button>
+            <button class="tb-btn dd-toggle" data-tip="Lists"><span style="font-size:13px">≡</span><svg class="caret" viewBox="0 0 10 10"><path d="M1 3l4 4 4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></button>
             <div class="dd-menu">
-              <button data-list="ul"><span class="opt-ico">•</span>Bullet list</button>
-              <button data-list="ol"><span class="opt-ico">1.</span>Numbered list</button>
-              <button data-list="check"><span class="opt-ico">☑</span>Checklist</button>
+              <button data-list="ul"><span class="opt-ico">•</span>Bullet list<span class="opt-sc">Ctrl+Shift+8</span></button>
+              <button data-list="ol"><span class="opt-ico">1.</span>Numbered list<span class="opt-sc">Ctrl+Shift+7</span></button>
+              <button data-list="check"><span class="opt-ico">☑</span>Checklist<span class="opt-sc">Ctrl+Shift+9</span></button>
             </div>
           </div>
-          <button class="tb-btn" data-cmd="outdent" title="Outdent">⇤</button>
-          <button class="tb-btn" data-cmd="indent" title="Indent">⇥</button>
-        </div>
-        <!-- alignment with proper icons -->
-        <div class="tb-group">
-          <button class="tb-btn" data-cmd="justifyLeft" title="Align left"><svg viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="1.7" rx=".8"/><rect x="1" y="6" width="9" height="1.7" rx=".8"/><rect x="1" y="10" width="13" height="1.7" rx=".8"/><rect x="1" y="14" width="7" height="1.7" rx=".8"/></svg></button>
-          <button class="tb-btn" data-cmd="justifyCenter" title="Center"><svg viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="1.7" rx=".8"/><rect x="3.5" y="6" width="9" height="1.7" rx=".8"/><rect x="1.5" y="10" width="13" height="1.7" rx=".8"/><rect x="4.5" y="14" width="7" height="1.7" rx=".8"/></svg></button>
-          <button class="tb-btn" data-cmd="justifyRight" title="Align right"><svg viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="1.7" rx=".8"/><rect x="6" y="6" width="9" height="1.7" rx=".8"/><rect x="2" y="10" width="13" height="1.7" rx=".8"/><rect x="8" y="14" width="7" height="1.7" rx=".8"/></svg></button>
-          <button class="tb-btn" data-cmd="justifyFull" title="Justify"><svg viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="1.7" rx=".8"/><rect x="1" y="6" width="14" height="1.7" rx=".8"/><rect x="1" y="10" width="14" height="1.7" rx=".8"/><rect x="1" y="14" width="9" height="1.7" rx=".8"/></svg></button>
-        </div>
-        <!-- insert -->
-        <div class="tb-group">
-          <button class="tb-btn" id="insertTable" title="Insert table">▦</button>
-          <button class="tb-btn" id="insertLink" title="Insert link">🔗</button>
-          <button class="tb-btn" id="insertImage" title="Insert image">🖼</button>
-          <button class="tb-btn" data-cmd="insertHorizontalRule" title="Divider">―</button>
         </div>
         <!-- panels -->
         <div class="tb-group">
           <div class="dd" id="panelDD">
-            <button class="tb-btn dd-toggle" title="Insert panel"><svg viewBox="0 0 16 16"><rect x="1.5" y="3" width="13" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="4.5" cy="6" r="1.3"/></svg><svg class="caret" viewBox="0 0 10 10"><path d="M1 3l4 4 4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></button>
+            <button class="tb-btn dd-toggle" data-tip="Insert panel"><svg viewBox="0 0 16 16"><rect x="1.5" y="3" width="13" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="4.5" cy="6" r="1.3"/></svg><svg class="caret" viewBox="0 0 10 10"><path d="M1 3l4 4 4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></button>
             <div class="dd-menu panel-menu">
               <button data-panel="info"><span class="opt-ico">ⓘ</span>Info panel</button>
               <button data-panel="note"><span class="opt-ico">✎</span>Note panel</button>
@@ -607,8 +595,40 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
             </div>
           </div>
         </div>
+        <!-- overflow (...) -->
         <div class="tb-group">
-          <button class="tb-btn" data-cmd="removeFormat" title="Clear formatting">⌫</button>
+          <div class="dd" id="overflowDD">
+            <button class="tb-btn dd-toggle" data-tip="More tools"><span class="ov-dots">⋯</span></button>
+            <div class="dd-menu overflow-menu">
+              <div class="ov-row">
+                <button class="tb-btn" data-cmd="strikeThrough" data-tip="Strikethrough"><s>S</s></button>
+                <button class="tb-btn" data-cmd="code" data-tip="Inline code">&lt;/&gt;</button>
+                <button class="tb-btn" data-cmd="hiliteColor" data-tip="Highlight">🖍</button>
+                <button class="tb-btn" data-cmd="outdent" data-tip="Outdent">⇤</button>
+                <button class="tb-btn" data-cmd="indent" data-tip="Indent">⇥</button>
+              </div>
+              <div class="ov-row">
+                <button class="tb-btn" id="insertTable" data-tip="Insert table">▦</button>
+                <button class="tb-btn" id="insertLink" data-tip="Insert link" data-sc="Ctrl+K">🔗</button>
+                <button class="tb-btn" id="insertImage" data-tip="Insert image">🖼</button>
+                <button class="tb-btn" data-cmd="insertHorizontalRule" data-tip="Divider">―</button>
+              </div>
+              <div class="ov-color">
+                <span class="ov-label">Text color</span>
+                <div class="color-grid" id="colorGrid"></div>
+                <label class="custom-color">Custom <input type="color" id="foreColor" value="#5b6cff"></label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- alignment row -->
+      <div class="toolbar subbar" id="alignBar">
+        <div class="tb-group">
+          <button class="tb-btn" data-cmd="justifyLeft" data-tip="Align left"><svg viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="1.7" rx=".8"/><rect x="1" y="6" width="9" height="1.7" rx=".8"/><rect x="1" y="10" width="13" height="1.7" rx=".8"/><rect x="1" y="14" width="7" height="1.7" rx=".8"/></svg></button>
+          <button class="tb-btn" data-cmd="justifyCenter" data-tip="Center"><svg viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="1.7" rx=".8"/><rect x="3.5" y="6" width="9" height="1.7" rx=".8"/><rect x="1.5" y="10" width="13" height="1.7" rx=".8"/><rect x="4.5" y="14" width="7" height="1.7" rx=".8"/></svg></button>
+          <button class="tb-btn" data-cmd="justifyRight" data-tip="Align right"><svg viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="1.7" rx=".8"/><rect x="6" y="6" width="9" height="1.7" rx=".8"/><rect x="2" y="10" width="13" height="1.7" rx=".8"/><rect x="8" y="14" width="7" height="1.7" rx=".8"/></svg></button>
+          <button class="tb-btn" data-cmd="justifyFull" data-tip="Justify"><svg viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="1.7" rx=".8"/><rect x="1" y="6" width="14" height="1.7" rx=".8"/><rect x="1" y="10" width="14" height="1.7" rx=".8"/><rect x="1" y="14" width="9" height="1.7" rx=".8"/></svg></button>
         </div>
       </div>
 
@@ -730,6 +750,11 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
 <!-- Note context menu -->
 <div class="ctx-menu" id="noteCtxMenu">
   <button class="danger" data-act="delete"><span class="ctx-ico">🗑</span>Delete note</button>
+</div>
+
+<!-- Editor selection context menu -->
+<div class="ctx-menu" id="editorCtxMenu">
+  <button data-act="clearFormat"><span class="ctx-ico">⌫</span>Clear formatting</button>
 </div>
 
 <div class="local-only" id="localOnly">
@@ -1050,9 +1075,15 @@ document.getElementById("titleInput").addEventListener("keydown",e=>{
 });
 doc.addEventListener("keydown",e=>{
   if(!(e.metaKey||e.ctrlKey)) return;
+  if(e.altKey){
+    const bmap={Digit1:"h1",Digit2:"h2",Digit3:"h3",Digit4:"blockquote",Digit0:"p"};
+    if(bmap[e.code]){ e.preventDefault(); exec("formatBlock", bmap[e.code]); }
+    return;
+  }
   if(e.shiftKey){
     if(e.code==="Digit8"){ e.preventDefault(); exec("insertUnorderedList"); }
     else if(e.code==="Digit7"){ e.preventDefault(); exec("insertOrderedList"); }
+    else if(e.code==="Digit9"){ e.preventDefault(); toggleChecklist(); }
     return;
   }
   const k=e.key.toLowerCase();
@@ -1076,7 +1107,7 @@ document.getElementById("headPin").addEventListener("click",()=>{ if(current) to
 
 function exec(cmd,val=null){ doc.focus(); document.execCommand(cmd,false,val); if(current){current.body=doc.innerHTML;updateStats();scheduleSave();} syncToolbar(); }
 
-document.getElementById("toolbar").querySelectorAll("[data-cmd]").forEach(btn=>{
+document.querySelectorAll(".toolbar [data-cmd]").forEach(btn=>{
   btn.addEventListener("mousedown",e=>e.preventDefault());
   btn.addEventListener("click",()=>{
     const cmd=btn.dataset.cmd;
@@ -1098,12 +1129,12 @@ function buildColorGrid(){
   g.innerHTML=COLOR_PALETTE.map(c=>`<button data-c="${c}" style="background:${c};${c==='#ffffff'?'border-color:var(--line)':''}"></button>`).join("");
   g.querySelectorAll("button").forEach(b=>{
     b.addEventListener("mousedown",e=>e.preventDefault());
-    b.addEventListener("click",()=>{ document.getElementById("colorInd").style.background=b.dataset.c; exec("foreColor",b.dataset.c); closeDropdowns(); });
+    b.addEventListener("click",()=>{ const ci=document.getElementById("colorInd"); if(ci) ci.style.background=b.dataset.c; exec("foreColor",b.dataset.c); closeDropdowns(); });
   });
 }
 const foreColor=document.getElementById("foreColor");
 foreColor.addEventListener("mousedown",e=>e.stopPropagation());
-foreColor.addEventListener("input",e=>{ document.getElementById("colorInd").style.background=e.target.value; exec("foreColor",e.target.value); });
+foreColor.addEventListener("input",e=>{ const ci=document.getElementById("colorInd"); if(ci) ci.style.background=e.target.value; exec("foreColor",e.target.value); });
 
 /* panels */
 document.querySelectorAll("#panelDD [data-panel]").forEach(b=>{
@@ -1150,6 +1181,42 @@ function insertChecklist(){
   placeCaret(li,0);
   ensureTrailingRow();
   current.body=doc.innerHTML; updateStats(); scheduleSave();
+}
+/* Ctrl+Shift+9: turn the current line into a checklist, or back into a paragraph */
+function toggleChecklist(){
+  if(!current) return;
+  doc.focus();
+  const sel=window.getSelection();
+  let li=null;
+  if(sel.rangeCount){
+    let node=sel.getRangeAt(0).startContainer; if(node.nodeType===3) node=node.parentElement;
+    li=node&&node.closest?node.closest("li"):null;
+    if(li && !li.closest("ul.checklist")) li=null;
+  }
+  if(li){
+    checklistItemToParagraph(li);
+    ensureTrailingRow();
+    if(current){ current.body=doc.innerHTML; updateStats(); scheduleSave(); }
+    syncToolbar();
+  } else {
+    insertChecklist();
+  }
+}
+function checklistItemToParagraph(li){
+  const ul=li.closest("ul.checklist");
+  const p=document.createElement("p");
+  p.innerHTML=li.innerHTML.trim()?li.innerHTML:"<br>";
+  const after=[]; let n=li.nextElementSibling;
+  while(n){ after.push(n); n=n.nextElementSibling; }
+  ul.after(p);
+  if(after.length){
+    const ul2=document.createElement("ul"); ul2.className="checklist";
+    after.forEach(item=>ul2.appendChild(item));
+    p.after(ul2);
+  }
+  li.remove();
+  if(!ul.querySelector("li")) ul.remove();
+  placeCaret(p,0);
 }
 function placeCaret(el,off){
   const r=document.createRange(); r.setStart(el,off); r.collapse(true);
@@ -1223,10 +1290,11 @@ doc.addEventListener("keydown",e=>{
 
 /* table / link / image */
 document.getElementById("insertTable").addEventListener("mousedown",e=>e.preventDefault());
-document.getElementById("insertTable").addEventListener("click",openTableModal);
+document.getElementById("insertTable").addEventListener("click",()=>{ closeDropdowns(); openTableModal(); });
 document.getElementById("insertLink").addEventListener("mousedown",e=>e.preventDefault());
-document.getElementById("insertLink").addEventListener("click",openLinkPopover);
+document.getElementById("insertLink").addEventListener("click",()=>{ closeDropdowns(); openLinkPopover(); });
 document.getElementById("insertImage").addEventListener("click",()=>{
+  closeDropdowns();
   const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
   inp.onchange=()=>{ const f=inp.files[0]; if(f) fileToImg(f); }; inp.click();
 });
@@ -1667,12 +1735,30 @@ function updateStats(){
 function initDropdowns(){
   document.querySelectorAll(".dd-toggle").forEach(t=>{
     t.addEventListener("mousedown",e=>e.preventDefault());
-    t.addEventListener("click",e=>{ e.stopPropagation(); const dd=t.closest(".dd"); const open=dd.classList.contains("open"); closeDropdowns(); if(!open) dd.classList.add("open"); });
+    t.addEventListener("click",e=>{ e.stopPropagation(); const dd=t.closest(".dd"); const open=dd.classList.contains("open"); closeDropdowns(); if(!open){ positionDropdown(dd); dd.classList.add("open"); } });
   });
   document.querySelectorAll(".dd-menu").forEach(m=>m.addEventListener("mousedown",e=>{ if(e.target.tagName!=="INPUT") e.preventDefault(); }));
   document.addEventListener("click",closeDropdowns);
+  window.addEventListener("resize",closeDropdowns);
 }
-function closeDropdowns(){ document.querySelectorAll(".dd.open").forEach(d=>d.classList.remove("open")); }
+/* keep an open menu on-screen: if its right edge would spill past the viewport, anchor it to the toggle's right edge instead */
+function positionDropdown(dd){
+  const menu=dd.querySelector(".dd-menu");
+  if(!menu) return;
+  menu.style.left=""; menu.style.right="";
+  const rect=menu.getBoundingClientRect();   // measured at the default left:0 position
+  if(rect.right>window.innerWidth-8){
+    menu.style.left="auto";
+    menu.style.right="0";
+  }
+}
+function closeDropdowns(){
+  document.querySelectorAll(".dd.open").forEach(d=>{
+    d.classList.remove("open");
+    const m=d.querySelector(".dd-menu");
+    if(m){ m.style.left=""; m.style.right=""; }
+  });
+}
 
 /* ================= CATEGORY MODAL ================= */
 let editingCat=null, pickedColor=SWATCH_COLORS[0];
@@ -1705,6 +1791,7 @@ let ctxCatId=null, ctxNoteId=null;
 function hideCtxMenus(){
   document.getElementById("catCtxMenu").classList.remove("show");
   document.getElementById("noteCtxMenu").classList.remove("show");
+  document.getElementById("editorCtxMenu").classList.remove("show");
 }
 function positionCtx(menu,x,y){
   menu.classList.add("show");
@@ -1728,6 +1815,23 @@ document.getElementById("noteCtxMenu").addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b) return;
   const act=b.dataset.act, id=ctxNoteId; hideCtxMenus();
   if(act==="delete") confirmDeleteNote(id);
+});
+
+/* editor selection right-click: clear formatting on highlighted text */
+const editorCtxMenu=document.getElementById("editorCtxMenu");
+editorCtxMenu.addEventListener("mousedown",e=>e.preventDefault()); // keep the text selection alive
+doc.addEventListener("contextmenu",e=>{
+  const sel=window.getSelection();
+  if(!sel || sel.isCollapsed || !sel.rangeCount) return; // only show when text is selected
+  if(!doc.contains(sel.getRangeAt(0).commonAncestorContainer)) return;
+  e.preventDefault();
+  hideCtxMenus();
+  positionCtx(editorCtxMenu,e.clientX,e.clientY);
+});
+editorCtxMenu.addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  const act=b.dataset.act; hideCtxMenus();
+  if(act==="clearFormat") exec("removeFormat");
 });
 
 function confirmDeleteCategory(id){
