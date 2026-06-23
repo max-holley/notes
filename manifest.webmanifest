@@ -1,0 +1,13 @@
+{
+  "name": "Notes",
+  "short_name": "Notes",
+  "description": "A local-first notes app.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1a1430",
+  "theme_color": "#5b6cff",
+  "icons": [
+    { "src": "flask.png", "sizes": "240x240", "type": "image/png", "purpose": "any" },
+    { "src": "flask.png", "sizes": "240x240", "type": "image/png", "purpose": "maskable" }
+  ]
+}
