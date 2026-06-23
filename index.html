@@ -391,10 +391,10 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
 /* checklist — checkbox is drawn in CSS so the caret flows normally in the text */
 .doc ul.checklist{list-style:none;padding-left:4px;margin:8px 0}
 .doc ul.checklist li{position:relative;margin:4px 0;padding-left:30px;min-height:24px}
-.doc ul.checklist li::before{content:"";position:absolute;left:2px;top:2px;width:19px;height:19px;border-radius:6px;border:2px solid var(--text-faint);background:var(--glass);cursor:pointer;box-sizing:border-box;transition:background .18s var(--ease),border-color .18s var(--ease)}
+.doc ul.checklist li::before{content:"";position:absolute;left:2px;top:50%;transform:translateY(-50%);width:19px;height:19px;border-radius:6px;border:2px solid var(--text-faint);background:var(--glass);cursor:pointer;box-sizing:border-box;transition:background .18s var(--ease),border-color .18s var(--ease)}
 .doc ul.checklist li:hover::before{border-color:var(--accent)}
-.doc ul.checklist li.checked::before{background:var(--accent);border-color:transparent}
-.doc ul.checklist li.checked::after{content:"";position:absolute;left:9px;top:5px;width:4px;height:8px;border:solid #fff;border-width:0 2.4px 2.4px 0;transform:rotate(45deg);pointer-events:none}
+.doc ul.checklist li.checked::before{background:var(--accent);border-color:transparent;transform:translateY(-50%)}
+.doc ul.checklist li.checked::after{content:"";position:absolute;left:9px;top:50%;width:4px;height:8px;border:solid #fff;border-width:0 2.4px 2.4px 0;transform:translateY(-60%) rotate(45deg);pointer-events:none}
 .doc ul.checklist li.checked{color:var(--text-faint);text-decoration:line-through}
 
 /* bottom-left "saving locally only" indicator (shown when the backup folder isn't reachable yet) */
