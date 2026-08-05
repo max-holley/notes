@@ -7,7 +7,7 @@
   "background_color": "#1a1430",
   "theme_color": "#5b6cff",
   "icons": [
-    { "src": "flask.png", "sizes": "240x240", "type": "image/png", "purpose": "any" },
-    { "src": "flask.png", "sizes": "240x240", "type": "image/png", "purpose": "maskable" }
+    { "src": "Logo.png", "sizes": "500x500", "type": "image/png", "purpose": "any" },
+    { "src": "Logo-125x125.png", "sizes": "125x125", "type": "image/png", "purpose": "maskable" }
   ]
 }
