@@ -2,7 +2,9 @@
 <html lang="en" data-theme="auto">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Notes</title>
 <link rel="icon" type="image/png" href="flask.png">
 <link rel="apple-touch-icon" href="flask.png">
@@ -433,12 +435,12 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
   .list-head{padding-left:56px}   /* clear the floating toggle button */
 }
 
-/* ---- Mobile: categories / settings / list / editor each get their own page ---- */
+/* ---- Mobile: flex column layout — bars are real flex children so Safari's URL bar never overlaps them ---- */
 @media(max-width:700px){
-  body{overflow:hidden}
-  .app{display:block;height:100vh;height:100dvh;padding:0;gap:0}
-  .app>.panel{position:fixed;inset:0;border-radius:0;border:none;box-shadow:none;display:none;z-index:40}
-  .sidebar{position:fixed;inset:0;width:auto;transform:none!important;z-index:40;padding:16px 14px 80px}
+  html,body{overflow:hidden;overscroll-behavior:none;height:100%}
+  .app{display:flex;flex-direction:column;height:100vh;height:100dvh;padding:0;gap:0}
+  .app>.panel{position:relative;flex:1 1 auto;min-height:0;min-width:0;border-radius:0;border:none;box-shadow:none;display:none;inset:auto;transform:none!important;width:auto;z-index:auto}
+  .sidebar{padding:14px 14px 12px}
   .sidebar-toggle{display:none}
   .scrim{display:none}
   .list-head{padding-left:14px}
@@ -458,30 +460,33 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
   .app[data-m="settings"] .settings-pop{position:static;opacity:1;transform:none;pointer-events:auto;display:flex;box-shadow:none;border:none;background:none;backdrop-filter:none;-webkit-backdrop-filter:none;padding:0}
   .app[data-m="settings"] .settings-pop:after{display:none}
 
-  .notes{padding-bottom:84px}
+  .notes{padding-bottom:12px}
   .nav{padding-bottom:8px}
 
-  /* Bottom tab bar */
-  .mtabs{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:95;background:var(--glass-strong);backdrop-filter:blur(20px) saturate(1.6);-webkit-backdrop-filter:blur(20px) saturate(1.6);border-top:1px solid var(--glass-border);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+  /* Bottom tab bar — flex child of .app, so no fixed-position URL-bar collision */
+  .mtabs{display:flex;flex:0 0 auto;background:var(--glass-strong);backdrop-filter:blur(20px) saturate(1.6);-webkit-backdrop-filter:blur(20px) saturate(1.6);border-top:1px solid var(--glass-border);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
   .mtabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:var(--text-faint);font-family:inherit;font-size:10.5px;font-weight:600;padding:5px 4px;border-radius:11px;cursor:pointer;transition:color .2s var(--ease),background .2s var(--ease)}
   .mtabs button svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
   .mtabs button.active{color:var(--accent)}
   .app[data-m="editor"] .mtabs{display:none}
-  .local-only{bottom:84px}
+  .local-only{bottom:calc(70px + env(safe-area-inset-bottom));left:12px;right:12px;max-width:none}
 
-  /* Editor: formatting toolbar drops to a reachable, scrollable bottom bar */
-  .editor-wrap{z-index:40}
-  .toolbar{order:10;border-bottom:none;border-top:1px solid var(--line);flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;padding:8px 10px calc(8px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch;gap:2px}
+  /* Editor: title/tags scroll with doc; toolbar sits at bottom as flex child */
+  .editor-wrap{flex-direction:column}
+  .editor{flex:1;min-height:0;display:none;flex-direction:column;overflow:hidden}
+  .editor.show{display:flex}
+  .m-back{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;background:none;border:none;color:var(--accent);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;padding:10px 18px 2px;align-self:flex-start}
+  .m-back svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  .editor-head{flex:0 0 auto;padding:4px 18px 4px}
+  .note-tags-row{flex:0 0 auto;padding:6px 18px 4px}
+  .doc{flex:1 1 auto;min-height:0;overflow-y:auto;padding:10px 18px 20px;-webkit-overflow-scrolling:touch}
+  .editor-foot{flex:0 0 auto;padding:7px 18px}
+  .title-input{font-size:25px}
+  .toolbar{order:10;flex:0 0 auto;border-bottom:none;border-top:1px solid var(--line);flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;padding:8px 10px calc(8px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch;gap:2px}
+  .toolbar.subbar{order:9;padding:5px 10px;border-top:1px solid var(--line);border-bottom:none}
   .toolbar::-webkit-scrollbar{display:none}
   .tb-group{flex:0 0 auto}
   .toolbar .dd-menu{top:auto;bottom:calc(100% + 8px);transform-origin:bottom left}
-  .editor-head{padding:6px 18px 4px}
-  .note-tags-row{padding:6px 18px 4px}
-  .doc{padding:10px 18px 28px}
-  .editor-foot{padding:7px 18px}
-  .title-input{font-size:25px}
-  .m-back{display:inline-flex;align-items:center;gap:4px;background:none;border:none;color:var(--accent);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;padding:12px 18px 2px}
-  .m-back svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 }
 </style>
 </head>
@@ -654,17 +659,17 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
       </div>
     </div>
   </section>
+
+  <!-- Mobile bottom navigation (flex child of .app so it never collides with Safari's URL bar) -->
+  <nav class="mtabs" id="mtabs">
+    <button data-mtab="list"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Notes</button>
+    <button data-mtab="cats"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Categories</button>
+    <button data-mtab="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</button>
+  </nav>
 </div>
 
 <!-- Drawer backdrop (tablet) -->
 <div class="scrim" id="scrim"></div>
-
-<!-- Mobile bottom navigation -->
-<nav class="mtabs" id="mtabs">
-  <button data-mtab="list"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Notes</button>
-  <button data-mtab="cats"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Categories</button>
-  <button data-mtab="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</button>
-</nav>
 
 <!-- Category modal -->
 <div class="modal-back" id="catModal">
