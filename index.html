@@ -6,10 +6,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Notes</title>
-<link rel="icon" type="image/png" href="Logo.png">
-<link rel="apple-touch-icon" href="Logo-125x125.png">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#5b6cff">
+<meta name="theme-color" content="#f5f5f7">
 <style>
 /* ============ THEME TOKENS ============ */
 :root{
@@ -489,18 +490,19 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
   .toolbar .dd-menu{top:auto;bottom:calc(100% + 8px);transform-origin:bottom left}
 }
 </style>
+<link rel="stylesheet" href="design.css">
 </head>
 <body>
 <div class="bg-field"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
 
 <div class="app">
-  <button class="sidebar-toggle" id="sidebarToggle" title="Collapse sidebar" aria-label="Toggle sidebar" style="border-radius: 100%">
+  <button class="sidebar-toggle" id="sidebarToggle" title="Collapse sidebar" aria-label="Toggle sidebar" >
     <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
   </button>
   <!-- SIDEBAR -->
   <aside class="panel sidebar">
     <div class="brand">
-      <svg xmlns="http://www.w3.org/2000/svg" class="brand-mark" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-file-code"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 2l.117 .007a1 1 0 0 1 .876 .876l.007 .117v4l.005 .15a2 2 0 0 0 1.838 1.844l.157 .006h4l.117 .007a1 1 0 0 1 .876 .876l.007 .117v9a3 3 0 0 1 -2.824 2.995l-.176 .005h-10a3 3 0 0 1 -2.995 -2.824l-.005 -.176v-14a3 3 0 0 1 2.824 -2.995l.176 -.005zm-1.553 11.106a1 1 0 0 0 -1.341 .447l-1 2a1 1 0 0 0 0 .894l1 2a1 1 0 0 0 1.341 .447l.102 -.058a1 1 0 0 0 .345 -1.283l-.776 -1.553l.776 -1.553a1 1 0 0 0 -.447 -1.341m4.447 .447a1 1 0 0 0 -1.341 -.447l-.102 .058a1 1 0 0 0 -.345 1.283l.774 1.553l-.775 1.553a1 1 0 0 0 1.788 .894l1 -2a1 1 0 0 0 0 -.894z" /><path d="M19 7h-4l-.001 -4.001z" /></svg>
+      <img class="brand-mark" src="icon.svg" alt="" width="29" height="29">
       <h1>Notes</h1>
     </div>
 
@@ -539,10 +541,10 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
 
   <!-- NOTE LIST -->
   <section class="panel list">
-    <div class="list-head"><input class="search" id="search" placeholder="Search notes…"></div>
+    <div class="list-head"><input class="search" id="search" aria-label="Search notes" placeholder="Search notes…"></div>
     <div class="list-title">
       <h2 id="listTitle">All Notes</h2>
-      <button class="new-btn" id="newNoteBtn">＋ New</button>
+      <button class="new-btn" id="newNoteBtn" aria-label="New note" title="New note (Ctrl+N)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M15 4l5 5M9 15l1-5L19 1l4 4-9 9z"/></svg></button>
     </div>
     <div class="notes" id="noteList"></div>
   </section>
@@ -550,8 +552,9 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
   <!-- EDITOR -->
   <section class="panel editor-wrap">
     <div class="editor-empty" id="editorEmpty">
-      <svg xmlns="http://www.w3.org/2000/svg" class="big" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-file-code"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 2l.117 .007a1 1 0 0 1 .876 .876l.007 .117v4l.005 .15a2 2 0 0 0 1.838 1.844l.157 .006h4l.117 .007a1 1 0 0 1 .876 .876l.007 .117v9a3 3 0 0 1 -2.824 2.995l-.176 .005h-10a3 3 0 0 1 -2.995 -2.824l-.005 -.176v-14a3 3 0 0 1 2.824 -2.995l.176 -.005zm-1.553 11.106a1 1 0 0 0 -1.341 .447l-1 2a1 1 0 0 0 0 .894l1 2a1 1 0 0 0 1.341 .447l.102 -.058a1 1 0 0 0 .345 -1.283l-.776 -1.553l.776 -1.553a1 1 0 0 0 -.447 -1.341m4.447 .447a1 1 0 0 0 -1.341 -.447l-.102 .058a1 1 0 0 0 -.345 1.283l.774 1.553l-.775 1.553a1 1 0 0 0 1.788 .894l1 -2a1 1 0 0 0 0 -.894z" /><path d="M19 7h-4l-.001 -4.001z" /></svg>
-      <div>Select a note or create a new one<br>to start writing.</div>
+      <img class="big" src="icon.svg" alt="Notes" width="68" height="68">
+      <div><h2>A little space for your thoughts.</h2><p>Select a note, or start with a fresh page.<br>Your ideas, all in one place.</p></div>
+      <button class="empty-create" onclick="newNote()">Create a note</button>
     </div>
 
     <div class="editor" id="editor">
@@ -638,7 +641,7 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
       </div>
 
       <div class="editor-head">
-        <input class="title-input" id="titleInput" placeholder="Untitled note">
+        <input class="title-input" id="titleInput" aria-label="Note title" placeholder="Untitled note">
       </div>
       <div class="note-tags-row" id="noteTagsRow">
         <div class="dd cat-dd" id="catDD">
@@ -652,10 +655,10 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
         <button class="add-tag" id="addTagBtn">＋ tag</button>
         <button class="head-pin" id="headPin" title="Pin note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button>
       </div>
-      <div class="doc" id="doc" contenteditable="true" data-placeholder="Start writing…"></div>
+      <div class="doc" id="doc" role="textbox" aria-label="Note content" aria-multiline="true" contenteditable="true" data-placeholder="Start writing…"></div>
       <div class="editor-foot">
         <span id="stats">0 words</span>
-        <button class="del-btn" id="delBtn">🗑 Delete note</button>
+        <button class="del-btn" id="delBtn">Delete note</button>
       </div>
     </div>
   </section>
@@ -827,7 +830,7 @@ const COLOR_PALETTE=["#15161c","#5a5d6b","#5b6cff","#af52de","#ff5b95","#ff453a"
 /* ================= ACCENT THEME ================= */
 const ACCENT_THEMES=[
   {name:"Indigo", l:"#5b6cff", d:"#8a9bff"},
-  {name:"Blue",   l:"#3b82f6", d:"#60a5fa"},
+  {name:"Blue",   l:"#007aff", d:"#409cff"},
   {name:"Purple", l:"#af52de", d:"#bf73f0"},
   {name:"Pink",   l:"#e91e8c", d:"#f472b6"},
   {name:"Teal",   l:"#00c7be", d:"#2dd4bf"},
@@ -843,7 +846,7 @@ function applyAccent(idx){
   document.querySelectorAll(".accent-swatch").forEach((s,i)=>s.classList.toggle("active",i===idx));
 }
 function buildAccentSwatches(){
-  const saved=parseInt(localStorage.getItem("accentIdx")||"0");
+  const saved=parseInt(localStorage.getItem("accentIdx")||"1");
   const box=document.getElementById("accentSwatches");
   box.innerHTML=ACCENT_THEMES.map((t,i)=>
     `<button class="accent-swatch${i===saved?" active":""}" data-ai="${i}" style="background:${t.l}" title="${t.name}"></button>`
@@ -1003,12 +1006,15 @@ function newNote(){
   setTimeout(()=>document.getElementById("titleInput").focus(),120);
 }
 function openNote(id){
+  flushSave();
+  savedRange=null;
   current=notes.find(n=>n.id===id); if(!current) return;
   document.getElementById("editorEmpty").style.display="none";
   document.getElementById("editor").classList.add("show");
   document.getElementById("titleInput").value=current.title||"";
   document.getElementById("doc").innerHTML=current.body||"";
   ensureTrailingRow();
+  resetEditorHistory();
   renderCatPick(); renderTagPills(); syncHeadPin(); updateStats(); setActiveCard(current.id);
   closeDrawer(); if(isMobile()) setMobileView("editor");
 }
@@ -1043,7 +1049,21 @@ function syncHeadPin(){
   b.querySelector("svg").setAttribute("fill",current.pinned?"currentColor":"none");
 }
 function persist(){ if(!current) return; current.updated=Date.now(); DB.put("notes",current); scheduleBackup(); }
-function scheduleSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ persist(); updateCard(current); },500); }
+function flushSave(){
+  if(saveTimer){ clearTimeout(saveTimer); saveTimer=null; persist(); updateCard(current); }
+}
+function scheduleSave(){
+  recordEditorHistory();
+  clearTimeout(saveTimer);
+  const note=current;
+  saveTimer=setTimeout(()=>{
+    saveTimer=null;
+    if(!note||!notes.includes(note)) return;
+    note.updated=Date.now(); DB.put("notes",note); updateCard(note); scheduleBackup();
+  },500);
+}
+document.addEventListener("visibilitychange",()=>{ if(document.hidden) flushSave(); });
+window.addEventListener("pagehide",flushSave);
 function updateCard(n){
   if(!n) return;
   const card=document.querySelector(`#noteList .note-card[data-id="${n.id}"]`);
@@ -1054,6 +1074,7 @@ function updateCard(n){
 }
 function deleteNote(){ if(current) deleteNoteById(current.id); }
 function deleteNoteById(id){
+  if(current?.id===id){ clearTimeout(saveTimer); saveTimer=null; }
   notes=notes.filter(n=>n.id!==id); DB.del("notes",id);
   if(current&&current.id===id){
     current=null;
@@ -1110,7 +1131,7 @@ function ensureTrailingRow(){
 doc.addEventListener("keyup",syncToolbar); doc.addEventListener("mouseup",syncToolbar);
 document.getElementById("headPin").addEventListener("click",()=>{ if(current) togglePin(current.id); });
 
-function exec(cmd,val=null){ doc.focus(); document.execCommand(cmd,false,val); if(current){current.body=doc.innerHTML;updateStats();scheduleSave();} syncToolbar(); }
+function exec(cmd,val=null){ doc.focus(); document.execCommand(cmd,false,val); ensureTrailingRow(); if(current){current.body=doc.innerHTML;updateStats();scheduleSave();} syncToolbar(); }
 
 document.querySelectorAll(".toolbar [data-cmd]").forEach(btn=>{
   btn.addEventListener("mousedown",e=>e.preventDefault());
@@ -1147,7 +1168,11 @@ document.querySelectorAll("#panelDD [data-panel]").forEach(b=>{
   b.addEventListener("click",()=>{ insertPanel(b.dataset.panel); closeDropdowns(); });
 });
 function insertPanel(type){
-  exec("insertHTML",`<div class="cpanel cpanel-${type}"><p><br></p></div><p><br></p>`);
+  if(!current) return;
+  exec("insertHTML",`<div class="cpanel cpanel-${type}" data-new-panel="true"><p><br></p></div><p><br></p>`);
+  const panel=doc.querySelector('[data-new-panel]');
+  if(panel){ panel.removeAttribute("data-new-panel"); placeCaret(panel.querySelector("p"),0); }
+  commitEditorChange();
 }
 
 /* lists dropdown (bullet / numbered / checklist) */
@@ -1238,34 +1263,33 @@ doc.addEventListener("click",e=>{
     if(current){ current.body=doc.innerHTML; scheduleSave(); }
   }
 });
-/* Enter inside a checklist: new item, or break out of the list when empty */
+/* Split checklist text at the caret; an empty item exits without losing following items. */
 doc.addEventListener("keydown",e=>{
-  if(e.key!=="Enter"||e.shiftKey) return;
+  if(e.defaultPrevented||e.isComposing||e.key!=="Enter"||e.shiftKey||e.ctrlKey||e.metaKey||e.altKey) return;
   const sel=window.getSelection(); if(!sel.rangeCount) return;
-  let node=sel.getRangeAt(0).startContainer; if(node.nodeType===3) node=node.parentElement;
-  const li=node&&node.closest?node.closest("li"):null;
-  if(!li||!doc.contains(li)||!li.closest("ul.checklist")) return;
+  const range=sel.getRangeAt(0);
+  const node=range.startContainer.nodeType===3?range.startContainer.parentElement:range.startContainer;
+  const li=node.closest?.("ul.checklist > li");
+  if(!li||!doc.contains(li)||!li.contains(range.endContainer)) return;
   e.preventDefault();
-  const ul=li.closest("ul.checklist");
-  if(!li.textContent.trim()){
-    const p=document.createElement("p"); p.innerHTML="<br>";
-    ul.after(p);
-    li.remove();
-    if(!ul.querySelector("li")) ul.remove();
-    placeCaret(p,0);
-  } else {
-    const nli=document.createElement("li"); nli.className="ck-item";
-    li.after(nli);
-    placeCaret(nli,0);
+  if(isEmptyBlock(li)) checklistItemToParagraph(li);
+  else {
+    range.deleteContents();
+    const tail=document.createRange(); tail.selectNodeContents(li);
+    tail.setStart(range.startContainer,range.startOffset);
+    const next=document.createElement("li"); next.className="ck-item";
+    next.appendChild(tail.extractContents());
+    if(!next.hasChildNodes()) next.innerHTML="<br>";
+    if(!li.hasChildNodes()) li.innerHTML="<br>";
+    li.after(next); placeCaret(next,0);
   }
-  ensureTrailingRow();
-  if(current){ current.body=doc.innerHTML; updateStats(); scheduleSave(); }
+  commitEditorChange();
 });
 
 /* Backspace at the start of a panel removes it (empty) or unwraps it (has content).
    Fixes panels inserted at the very top of a note being impossible to delete. */
 doc.addEventListener("keydown",e=>{
-  if(e.key!=="Backspace") return;
+  if(e.defaultPrevented||e.isComposing||e.key!=="Backspace") return;
   const sel=window.getSelection(); if(!sel.rangeCount||!sel.isCollapsed) return;
   const range=sel.getRangeAt(0);
   let el=range.startContainer; if(el.nodeType===3) el=el.parentElement;
@@ -1275,9 +1299,9 @@ doc.addEventListener("keydown",e=>{
   const probe=document.createRange();
   probe.selectNodeContents(panel);
   probe.setEnd(range.startContainer,range.startOffset);
-  if(probe.toString().length>0) return;
+  if(!isEmptyBlock(probe.cloneContents())) return;
   e.preventDefault();
-  if(!panel.textContent.trim()){
+  if(isEmptyBlock(panel)){
     const prev=panel.previousElementSibling;
     panel.remove();
     if(prev){ const r=document.createRange(); r.selectNodeContents(prev); r.collapse(false); sel.removeAllRanges(); sel.addRange(r); }
@@ -1298,6 +1322,7 @@ document.getElementById("insertTable").addEventListener("mousedown",e=>e.prevent
 document.getElementById("insertTable").addEventListener("click",()=>{ closeDropdowns(); openTableModal(); });
 document.getElementById("insertLink").addEventListener("mousedown",e=>e.preventDefault());
 document.getElementById("insertLink").addEventListener("click",()=>{ closeDropdowns(); openLinkPopover(); });
+document.getElementById("insertImage").addEventListener("mousedown",e=>{e.preventDefault();saveSel();});
 document.getElementById("insertImage").addEventListener("click",()=>{
   closeDropdowns();
   const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
@@ -1344,15 +1369,16 @@ doc.addEventListener("drop",e=>{
   for(const f of files){ if(f.type.startsWith("image")){ e.preventDefault(); fileToImg(f); } }
 });
 function fileToImg(file){
+  const target=current; saveSel(); const imageRange=savedRange?.cloneRange();
   const r=new FileReader();
-  r.onload=ev=>{ doc.focus(); exec("insertImage",ev.target.result); };
+  r.onload=ev=>{ if(current!==target) return; savedRange=imageRange; restoreSel(); exec("insertImage",ev.target.result); };
   r.readAsDataURL(file);
 }
 
 /* selection helpers (preserve caret while interacting with modals/popovers) */
 let savedRange=null;
 function saveSel(){ const s=window.getSelection(); if(s.rangeCount){ const r=s.getRangeAt(0); if(doc.contains(r.commonAncestorContainer)) savedRange=r.cloneRange(); } }
-function restoreSel(){ if(!savedRange) return; doc.focus(); const s=window.getSelection(); s.removeAllRanges(); s.addRange(savedRange); }
+function restoreSel(){ if(!savedRange||!doc.contains(savedRange.commonAncestorContainer)) return; doc.focus(); const s=window.getSelection(); s.removeAllRanges(); s.addRange(savedRange); }
 
 /* inline code — read selection BEFORE focusing (focus would collapse it); toggles on/off */
 function toggleInlineCode(){
@@ -1432,7 +1458,7 @@ function doTableInsert(r,c){
   for(let i=0;i<r-1;i++){ html+='<tr>'; for(let j=0;j<c;j++) html+='<td>&nbsp;</td>'; html+='</tr>'; }
   html+='</tbody></table><p><br></p>';
   doc.focus();
-  if(savedRange){ const s=window.getSelection(); s.removeAllRanges(); s.addRange(savedRange); }
+  restoreSel();
   document.execCommand("insertHTML",false,html);
   if(current){ current.body=doc.innerHTML; updateStats(); scheduleSave(); }
   syncToolbar();
@@ -2117,5 +2143,6 @@ let toastTimer;
 function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),2400); }
 </script>
+<script src="editor-behavior.js"></script>
 </body>
 </html>
