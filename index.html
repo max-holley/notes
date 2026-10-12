@@ -796,7 +796,7 @@ const DB={ _db:null,
 
 /* ================= STATE ================= */
 let notes=[], categories=[], current=null;
-let filterCat="all", filterTag=null, searchQ="";
+let filterCat="all", filterTags=[], searchQ="";
 let saveTimer=null;
 let justCreatedId=null;
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
@@ -882,7 +882,7 @@ function renderCats(){
   }
   nav.innerHTML=html;
   nav.querySelectorAll(".nav-item").forEach(el=>el.onclick=()=>{
-    filterCat=el.dataset.cat; filterTag=null; renderAll();
+    filterCat=el.dataset.cat; filterTags=[]; renderAll();
     document.getElementById("listTitle").textContent=catTitle(el.dataset.cat);
     closeDrawer(); if(isMobile()) setMobileView("list");
   });
@@ -916,10 +916,12 @@ async function reorderCategory(fromId, toId){
 function renderTags(){
   const cloud=document.getElementById("tagCloud");
   const tags=[...new Set(notes.flatMap(n=>n.tags||[]))].sort();
+  filterTags=filterTags.filter(t=>tags.includes(t));
   if(tags.length===0){ cloud.innerHTML=`<span style="font-size:12px;color:var(--text-faint);padding:4px 8px">No tags yet</span>`; return; }
-  cloud.innerHTML=tags.map(t=>`<span class="tag-chip ${filterTag===t?'active':''}" data-tag="${esc(t)}">#${esc(t)}</span>`).join("");
+  cloud.innerHTML=tags.map(t=>`<span class="tag-chip ${filterTags.includes(t)?'active':''}" data-tag="${esc(t)}">#${esc(t)}</span>`).join("");
   cloud.querySelectorAll(".tag-chip").forEach(el=>el.onclick=()=>{
-    filterTag=filterTag===el.dataset.tag?null:el.dataset.tag; renderList(); renderTags();
+    const t=el.dataset.tag;
+    filterTags=filterTags.includes(t)?filterTags.filter(x=>x!==t):[...filterTags,t]; renderList(); renderTags();
   });
 }
 
@@ -927,7 +929,7 @@ function filteredNotes(){
   return notes.filter(n=>{
     if(filterCat!=="all" && filterCat!=="__other__" && n.category!==filterCat) return false;
     if(filterCat==="__other__" && !noteIsOther(n)) return false;
-    if(filterTag && !(n.tags||[]).includes(filterTag)) return false;
+    if(filterTags.length && !filterTags.every(t=>(n.tags||[]).includes(t))) return false;
     if(searchQ){ const q=searchQ.toLowerCase();
       if(!((n.title||"").toLowerCase().includes(q) || stripHtml(n.body||"").toLowerCase().includes(q) || (n.tags||[]).join(" ").toLowerCase().includes(q))) return false; }
     return true;
