@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="auto">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Privacy Policy · Notes</title>
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="design.css">
+<style>
+:root{--font:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:96px}
+body{font-family:var(--font);background:var(--bg-1);color:var(--text);line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 72px}
+
+/* top bar */
+.topbar{display:flex;align-items:center;gap:10px;padding:20px 0 8px}
+.topbar .brand-mark{width:29px;height:29px;flex-shrink:0}
+.topbar .name{font-size:19px;font-weight:650;letter-spacing:-.6px}
+.back{margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;background:var(--chip);color:var(--text-soft);font-size:12.5px;font-weight:600;text-decoration:none;transition:background var(--speed) var(--ease),color var(--speed) var(--ease)}
+.back:hover{background:var(--hover);color:var(--text)}
+.back svg{width:14px;height:14px}
+
+/* intro */
+.intro{padding:28px 0 20px}
+.intro h1{font-size:30px;font-weight:650;letter-spacing:-.9px}
+.intro p{margin-top:8px;color:var(--text-soft);font-size:14px;max-width:560px}
+.updated{display:inline-block;margin-top:14px;font-size:11px;color:var(--text-faint)}
+
+/* sticky search */
+.searchbar{position:sticky;top:0;z-index:10;padding:10px 0;background:var(--bg-1)}
+.searchbox{position:relative}
+.searchbox:after{content:'';position:absolute;left:14px;top:13px;width:10px;height:10px;border:1.5px solid var(--text-faint);border-radius:50%;pointer-events:none}
+.searchbox:before{content:'';position:absolute;left:24px;top:23px;width:5px;height:1.5px;background:var(--text-faint);transform:rotate(45deg);z-index:1;pointer-events:none}
+.searchbox input{width:100%;height:38px;padding:8px 36px 8px 36px;border:1px solid transparent;background:var(--chip);color:var(--text);border-radius:8px;font-size:13px;outline:none;transition:border-color var(--speed) var(--ease),box-shadow var(--speed) var(--ease)}
+.searchbox input::placeholder{color:var(--text-faint)}
+.searchbox input:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--active)}
+.searchbox input::-webkit-search-cancel-button{display:none}
+.clear{position:absolute;right:6px;top:6px;width:26px;height:26px;border:0;border-radius:6px;background:none;color:var(--text-faint);font-size:17px;line-height:1;cursor:pointer;display:none}
+.clear:hover{background:var(--hover);color:var(--text)}
+.searchbox.has-text .clear{display:block}
+.status{font-size:11px;color:var(--text-faint);padding:6px 2px 0;min-height:20px}
+
+/* sections */
+.sections{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+.sec{background:var(--glass-strong);border:1px solid var(--glass-border);border-radius:var(--radius);padding:20px 22px;animation:fadeUp .25s var(--ease)}
+.sec[hidden]{display:none}
+.sec h2{font-size:16px;font-weight:650;letter-spacing:-.3px;display:flex;align-items:center;gap:10px}
+.sec h2 .num{flex-shrink:0;min-width:24px;height:24px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;background:var(--active);color:var(--accent);font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+.sec p{margin-top:10px;font-size:13.5px;color:var(--text-soft)}
+.sec p strong{color:var(--text);font-weight:600}
+mark{background:color-mix(in srgb,var(--accent) 24%,transparent);color:inherit;border-radius:3px;padding:0 1px}
+
+/* do / don't lists */
+.points{list-style:none;margin-top:12px;display:flex;flex-direction:column;gap:9px}
+.points li{position:relative;padding-left:28px;font-size:13.5px;color:var(--text-soft)}
+.points li b{color:var(--text);font-weight:600}
+.points li:before{content:'';position:absolute;left:0;top:2px;width:18px;height:18px;border-radius:50%}
+.points.yes li:before{background:var(--active)}
+.points.yes li:after{content:'';position:absolute;left:6px;top:6px;width:4px;height:8px;border:solid var(--accent);border-width:0 2px 2px 0;transform:rotate(45deg) scale(.9)}
+.points.no li:before{background:var(--chip)}
+.points.no li:after,.points.no li span.x{content:'';position:absolute;left:5px;top:10px;width:8px;height:2px;border-radius:1px;background:var(--text-faint);transform:rotate(45deg)}
+.points.no li span.x{transform:rotate(-45deg)}
+
+.summary{border-color:color-mix(in srgb,var(--accent) 35%,var(--glass-border))}
+
+.empty{display:none;text-align:center;padding:48px 16px;color:var(--text-faint);font-size:13px}
+.empty strong{display:block;font-size:15px;color:var(--text);font-weight:600;margin-bottom:4px}
+.empty.show{display:block}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.sec{animation:none}}
+@media (max-width:520px){
+  .intro h1{font-size:25px}
+  .sec{padding:16px 16px}
+  .searchbox input{font-size:16px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <img class="brand-mark" src="icon.svg" alt="" width="29" height="29">
+    <span class="name">Notes</span>
+    <a class="back" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Back to Notes</a>
+  </header>
+
+  <div class="intro">
+    <h1>Privacy Policy</h1>
+    <p>Notes is a local-first notes app. This page explains, in plain terms, what the app does and doesn't do with your information.</p>
+    <span class="updated">Last updated 12 October 2026</span>
+  </div>
+
+  <div class="searchbar">
+    <div class="searchbox" id="searchbox">
+      <input type="search" id="q" placeholder="Search sections…" aria-label="Search privacy policy sections" autocomplete="off" spellcheck="false">
+      <button class="clear" id="clear" type="button" aria-label="Clear search">×</button>
+    </div>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+  </div>
+
+  <main class="sections" id="sections">
+    <section class="sec summary" id="summary">
+      <h2>Summary</h2>
+      <p><strong>Your notes stay on your device.</strong> There are no accounts, no tracking and no analytics. The app doesn't upload your notes to any server.</p>
+    </section>
+
+    <section class="sec" id="does">
+      <h2>What the app does</h2>
+      <ul class="points yes">
+        <li><b>Stores your data locally.</b> Notes, categories, tags, images you add, and your appearance settings are saved in your browser's storage on this device.</li>
+        <li><b>Lets you export and import.</b> You can save your notes to a file and load them back whenever you choose.</li>
+        <li><b>Offers optional auto-backup.</b> If you turn it on (Chrome or Edge), the app writes a copy of your notes to a folder you pick.</li>
+        <li><b>Opens links you click.</b> Links in your notes open in a new tab.</li>
+      </ul>
+    </section>
+
+    <section class="sec" id="doesnt">
+      <h2>What the app doesn't do</h2>
+      <ul class="points no">
+        <li><span class="x"></span><b>No accounts or sign-in.</b> You don't give us a name, email or any personal details.</li>
+        <li><span class="x"></span><b>No uploading.</b> Your notes are never sent to us or anyone else.</li>
+        <li><span class="x"></span><b>No analytics, ads or tracking.</b> No cookies, trackers or third-party scripts.</li>
+        <li><span class="x"></span><b>No selling or sharing.</b> We don't hold your data, so there's nothing to sell or share.</li>
+        <li><span class="x"></span><b>No encryption.</b> Notes aren't password-protected or encrypted by the app.</li>
+        <li><span class="x"></span><b>No cross-device sync.</b> Your notes live only in the browser you use.</li>
+      </ul>
+    </section>
+
+    <section class="sec" id="where">
+      <h2>Where your data is stored</h2>
+      <p>Everything is kept in your browser on this device. Clearing your browser's site data, or uninstalling the app, will delete your notes. We can't recover them for you, so export or back up anything important.</p>
+    </section>
+
+    <section class="sec" id="backups">
+      <h2>Exports and backups</h2>
+      <p>Files you export, and any backup folder you connect, are yours. They are saved where you choose and are never uploaded by the app. Keep them somewhere you trust, as they contain your notes in readable form.</p>
+    </section>
+
+    <section class="sec" id="security">
+      <h2>Keeping your notes safe</h2>
+      <p>Because notes aren't encrypted, anyone who can use your device or browser profile could read them. Use a device lock screen and, if you can, full-disk encryption.</p>
+    </section>
+
+    <section class="sec" id="third">
+      <h2>Links and hosting</h2>
+      <p>Websites you open from a link in your notes are run by others and have their own privacy practices. The app itself is delivered as static files by its web host, which may keep standard server logs (such as IP address and request time). Those logs are outside the app's control and never include your notes.</p>
+    </section>
+
+    <section class="sec" id="children">
+      <h2>Children's privacy</h2>
+      <p>The app collects no personal information from anyone, including children.</p>
+    </section>
+
+    <section class="sec" id="changes">
+      <h2>Changes to this policy</h2>
+      <p>If the app's behaviour changes, this page will be updated and the date above will change.</p>
+    </section>
+
+    <section class="sec" id="contact">
+      <h2>Contact</h2>
+      <p>Questions about this policy? Open an issue on the project's <a href="https://github.com/max-holley/notes" target="_blank" rel="noopener">GitHub repository</a>.</p>
+    </section>
+  </main>
+
+  <div class="empty" id="empty"><strong>No matching sections</strong>Try a different word, or clear the search.</div>
+</div>
+
+<script>
+"use strict";
+/* ---- match the app's saved theme + accent (best effort; falls back to Auto) ---- */
+(function(){
+  try{
+    const ACCENTS=[["#5b6cff","#8a9bff"],["#007aff","#409cff"],["#af52de","#bf73f0"],["#e91e8c","#f472b6"],["#00c7be","#2dd4bf"],["#34c759","#4ade80"],["#ff9f0a","#ffb340"],["#ff453a","#ff6961"]];
+    const a=ACCENTS[parseInt(localStorage.getItem("accentIdx")||"1")]||ACCENTS[1];
+    document.documentElement.style.setProperty("--accent-l",a[0]);
+    document.documentElement.style.setProperty("--accent-d",a[1]);
+  }catch(e){}
+  try{
+    const r=indexedDB.open("glassNotes",1);
+    // never create the database from this page: the app owns its schema
+    r.onupgradeneeded=e=>e.target.transaction.abort();
+    r.onsuccess=e=>{
+      const db=e.target.result;
+      try{
+        if(db.objectStoreNames.contains("meta")){
+          const g=db.transaction("meta","readonly").objectStore("meta").get("theme");
+          g.onsuccess=()=>{ const t=g.result&&g.result.v; if(t==="light"||t==="dark"||t==="auto") document.documentElement.setAttribute("data-theme",t); db.close(); };
+          g.onerror=()=>db.close();
+        } else db.close();
+      }catch(err){ db.close(); }
+    };
+    r.onerror=e=>{ e.preventDefault&&e.preventDefault(); };
+  }catch(e){}
+})();
+
+/* ---- section header search ---- */
+const q=document.getElementById("q"), box=document.getElementById("searchbox");
+const statusEl=document.getElementById("status"), emptyEl=document.getElementById("empty");
+const secs=[...document.querySelectorAll(".sec")].map((el,i)=>{
+  const h=el.querySelector("h2"), text=h.textContent;
+  h.textContent=""; const num=document.createElement("span"); num.className="num"; num.textContent=i+1;
+  const label=document.createElement("span"); label.textContent=text;
+  h.append(num,label);
+  return {el,label,text};
+});
+function esc(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"); }
+function filter(){
+  const term=q.value.trim(); box.classList.toggle("has-text",!!q.value);
+  const re=term?new RegExp(esc(term),"i"):null; let n=0;
+  secs.forEach(s=>{
+    const hit=!re||re.test(s.text); s.el.hidden=!hit; if(hit) n++;
+    if(re&&hit){
+      s.label.textContent="";
+      const parts=s.text.split(new RegExp("("+esc(term)+")","i"));
+      parts.forEach((p,i)=>{ if(i%2){ const m=document.createElement("mark"); m.textContent=p; s.label.append(m); } else s.label.append(p); });
+    } else s.label.textContent=s.text;
+  });
+  statusEl.textContent=term?(n+" of "+secs.length+" sections"):"";
+  emptyEl.classList.toggle("show",!!term&&n===0);
+}
+q.addEventListener("input",filter);
+q.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){ q.value=""; filter(); }
+  else if(e.key==="Enter"){ const f=secs.find(s=>!s.el.hidden); if(f&&q.value.trim()) f.el.scrollIntoView({block:"start"}); }
+});
+document.getElementById("clear").addEventListener("click",()=>{ q.value=""; filter(); q.focus(); });
+</script>
+</body>
+</html>
