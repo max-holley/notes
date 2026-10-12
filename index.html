@@ -122,6 +122,7 @@ body{font-family:var(--font);color:var(--text);overflow:hidden;background:var(--
 .icon-btn:hover{background:var(--hover);color:var(--text);transform:translateY(-1px)}
 .backup-btn{margin-top:8px;width:100%;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px;border-radius:12px;background:var(--chip);border:1px solid var(--glass-border);color:var(--text-soft);font-size:12.5px;font-weight:600;cursor:pointer;transition:all .25s var(--ease)}
 .backup-btn:hover{background:var(--hover);color:var(--text)}
+a.backup-btn{text-decoration:none}
 .backup-btn.on{background:linear-gradient(135deg,rgba(52,199,89,.22),rgba(52,199,89,.1));color:var(--text);border-color:rgba(52,199,89,.4)}
 .backup-btn .live{width:8px;height:8px;border-radius:50%;background:#34c759;box-shadow:0 0 0 0 rgba(52,199,89,.6);animation:pulse 2s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(52,199,89,.5)}70%{box-shadow:0 0 0 7px rgba(52,199,89,0)}100%{box-shadow:0 0 0 0 rgba(52,199,89,0)}}
@@ -530,6 +531,8 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
         </div>
         <button class="backup-btn" id="backupBtn"><span id="backupBtnInner">◎ Auto-backup off</span></button>
         <div class="backup-status" id="backupStatus"></div>
+        <div class="settings-label">About</div>
+        <a class="backup-btn" id="privacyLink" href="privacy.html">Privacy policy</a>
       </div>
       <button class="settings-btn" id="settingsBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
