@@ -36,3 +36,7 @@ node tests/editor.cjs
 ```
 
 The suite uses an isolated browser profile and temporary local HTTP server. It checks editing, undo/redo, persistence, data tools, keyboard exits, and desktop/tablet/mobile layouts. Screenshot fixtures are generated in ignored `test-results/`; illustrative notes are confined to the test browser. The backup payload test uses a mock directory handle and does not request access to a real folder. Real device keyboard behaviour and browser-specific file-picker permissions still require device testing.
+
+## Markdown export / import
+
+Sidebar settings → `⤓ .md` exports the open note (or every note if none is open) as a `.md` file; `⤒ .md` imports one or more Markdown files as new notes (a leading `# Title` becomes the note title). Supports headings, bold/italic/strike, code, links, lists, checklists (`- [ ]`), tables, quotes, and panels (as `> [!INFO]`-style alerts).
