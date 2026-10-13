@@ -527,10 +527,7 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
         <div class="sidebar-footer">
           <button class="icon-btn" id="exportBtn">⤓ Export</button>
           <button class="icon-btn" id="importBtn">⤒ Import</button>
-          <input type="file" id="importFile" accept="application/json" hidden>
-          <button class="icon-btn" id="exportMdBtn" title="Export the open note (or all notes) as Markdown">⤓ .md</button>
-          <button class="icon-btn" id="importMdBtn" title="Import Markdown files as notes">⤒ .md</button>
-          <input type="file" id="importMdFile" accept=".md,.markdown,.txt,text/markdown" multiple hidden>
+          <input type="file" id="importFile" accept=".json,.md,.markdown,.txt,application/json,text/markdown" multiple hidden>
         </div>
         <button class="backup-btn" id="backupBtn"><span id="backupBtnInner">◎ Auto-backup off</span></button>
         <div class="backup-status" id="backupStatus"></div>
@@ -707,6 +704,15 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
 </div>
 
 <!-- Table insert modal -->
+<div class="modal-back" id="exportModal">
+  <div class="modal" role="dialog" aria-label="Export format">
+    <h3>Export as…</h3>
+    <div class="modal-actions" style="flex-direction:column">
+      <button class="btn-primary" id="exportJson">JSON — all notes &amp; categories</button>
+      <button class="btn-ghost" id="exportMd">Markdown — <span id="exportMdScope">all notes</span></button>
+    </div>
+  </div>
+</div>
 <div class="modal-back" id="tableModal">
   <div class="modal table-modal">
     <h3>Insert table</h3>
@@ -2008,36 +2014,28 @@ document.getElementById("search").addEventListener("input",e=>{
 
 /* ================= EXPORT / IMPORT ================= */
 function exportData(){ return {version:2,exported:new Date().toISOString(),categories,notes}; }
-document.getElementById("exportBtn").onclick=()=>{
+function exportJson(){
   const blob=new Blob([JSON.stringify(exportData(),null,2)],{type:"application/json"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
   a.download="notes-file.json"; a.click();
   URL.revokeObjectURL(a.href); toast("Exported "+notes.length+" notes");
-};
-document.getElementById("importBtn").onclick=()=>document.getElementById("importFile").click();
-document.getElementById("importFile").onchange=e=>{
-  const file=e.target.files[0]; if(!file)return;
-  const reader=new FileReader();
-  reader.onload=async ev=>{
-    try{
-      const data=JSON.parse(ev.target.result);
-      if(!data.notes||!Array.isArray(data.notes)) throw new Error("bad file");
-      let added=0;
-      for(const c of (data.categories||[])){ if(!categories.find(x=>x.id===c.id||x.name===c.name)){ categories.push(c); await DB.put("categories",c); } }
-      for(const n of data.notes){
-        if(n.pinned===undefined) n.pinned=false;
-        if(!categories.find(c=>c.id===n.category)) n.category=categories[0]?.id||null;
-        const exist=notes.find(x=>x.id===n.id);
-        if(exist){ Object.assign(exist,n); } else { notes.push(n); }
-        await DB.put("notes",n); added++;
-      }
-      renderAll(); scheduleBackup(); toast("Imported "+added+" notes");
-    }catch(err){ toast("Import failed: invalid file"); }
-    e.target.value="";
-  };
-  reader.readAsText(file);
-};
-
+}
+async function importJsonText(text){
+  try{
+    const data=JSON.parse(text);
+    if(!data.notes||!Array.isArray(data.notes)) throw new Error("bad file");
+    let added=0;
+    for(const c of (data.categories||[])){ if(!categories.find(x=>x.id===c.id||x.name===c.name)){ categories.push(c); await DB.put("categories",c); } }
+    for(const n of data.notes){
+      if(n.pinned===undefined) n.pinned=false;
+      if(!categories.find(c=>c.id===n.category)) n.category=categories[0]?.id||null;
+      const exist=notes.find(x=>x.id===n.id);
+      if(exist){ Object.assign(exist,n); } else { notes.push(n); }
+      await DB.put("notes",n); added++;
+    }
+    return added;
+  }catch(err){ return -1; }
+}
 /* ================= MARKDOWN EXPORT / IMPORT ================= */
 const PANEL_TYPES=["info","note","success","warning","error"];
 function htmlToMd(html){
@@ -2149,7 +2147,7 @@ function mdToHtml(md){
   return out.join("");
 }
 function mdFileName(t){ return (t||"Untitled").replace(/[\\/:*?"<>|]+/g,"-").trim().slice(0,80)||"Untitled"; }
-document.getElementById("exportMdBtn").onclick=()=>{
+function exportMarkdown(){
   if(current){ current.body=doc.innerHTML; current.title=document.getElementById("titleInput").value; }
   const list=current?[current]:notes;
   if(!list.length){ toast("Nothing to export"); return; }
@@ -2159,22 +2157,35 @@ document.getElementById("exportMdBtn").onclick=()=>{
     a.download=mdFileName(n.title)+".md"; a.click(); URL.revokeObjectURL(a.href);
   },k*150));
   toast("Exported "+list.length+(list.length===1?" note":" notes")+" as Markdown");
+}
+async function importMarkdownText(text,filename){
+  text=text.replace(/^---\n[\s\S]*?\n---\n/,"");
+  let title=filename.replace(/\.(md|markdown|txt)$/i,"");
+  const h=text.match(/^\s*#\s+(.+)\n?/);
+  if(h){ title=h[1].trim(); text=text.slice(text.indexOf(h[0])+h[0].length); }
+  const n={id:uid(),title,body:mdToHtml(text),category:categories[0]?.id||null,tags:[],pinned:false,created:Date.now(),updated:Date.now()};
+  notes.push(n); await DB.put("notes",n);
+}
+const exportModal=document.getElementById("exportModal");
+document.getElementById("exportBtn").onclick=()=>{
+  document.getElementById("exportMdScope").textContent=current?"open note":"all notes";
+  exportModal.classList.add("show"); document.getElementById("exportJson").focus();
 };
-document.getElementById("importMdBtn").onclick=()=>document.getElementById("importMdFile").click();
-document.getElementById("importMdFile").onchange=async e=>{
-  const files=[...e.target.files]; let added=0;
+exportModal.onclick=e=>{ if(e.target===exportModal) exportModal.classList.remove("show"); };
+document.getElementById("exportJson").onclick=()=>{ exportModal.classList.remove("show"); exportJson(); };
+document.getElementById("exportMd").onclick=()=>{ exportModal.classList.remove("show"); exportMarkdown(); };
+document.getElementById("importBtn").onclick=()=>document.getElementById("importFile").click();
+document.getElementById("importFile").onchange=async e=>{
+  const files=[...e.target.files]; let added=0, failed=0;
   for(const f of files){
-    let text=await f.text();
-    text=text.replace(/^---\n[\s\S]*?\n---\n/,"");
-    let title=f.name.replace(/\.(md|markdown|txt)$/i,"");
-    const h=text.match(/^\s*#\s+(.+)\n?/);
-    if(h){ title=h[1].trim(); text=text.slice(h[0].length+text.indexOf(h[0])); }
-    const n={id:uid(),title,body:mdToHtml(text),category:categories[0]?.id||null,tags:[],pinned:false,created:Date.now(),updated:Date.now()};
-    notes.push(n); await DB.put("notes",n); added++;
+    const text=await f.text();
+    const isJson=/\.json$/i.test(f.name)||(!/\.(md|markdown|txt)$/i.test(f.name)&&/^\s*[{\[]/.test(text));
+    if(isJson){ const n=await importJsonText(text); if(n<0) failed++; else added+=n; }
+    else { await importMarkdownText(text,f.name); added++; }
   }
   e.target.value="";
   if(added){ renderAll(); scheduleBackup(); }
-  toast(added?"Imported "+added+(added===1?" note":" notes")+" from Markdown":"No files selected");
+  toast(failed?(added?"Imported "+added+" notes; "+failed+" file(s) invalid":"Import failed: invalid file"):added?"Imported "+added+(added===1?" note":" notes"):"No files selected");
 };
 
 /* ================= OFFLINE AUTO-BACKUP (File System Access API) ================= */
