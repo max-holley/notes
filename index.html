@@ -2008,7 +2008,7 @@ function exportData(){ return {version:2,exported:new Date().toISOString(),categ
 document.getElementById("exportBtn").onclick=()=>{
   const blob=new Blob([JSON.stringify(exportData(),null,2)],{type:"application/json"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
-  a.download=`notes-${new Date().toISOString().slice(0,10)}.json`; a.click();
+  a.download="notes-file.json"; a.click();
   URL.revokeObjectURL(a.href); toast("Exported "+notes.length+" notes");
 };
 document.getElementById("importBtn").onclick=()=>document.getElementById("importFile").click();
@@ -2061,7 +2061,7 @@ async function loadBackupHandle(){
 }
 async function chooseBackupDir(){
   try{
-    const h=await window.showDirectoryPicker({mode:"readwrite",id:"glassyNotesBackup"});
+    const h=await window.showDirectoryPicker({mode:"readwrite",id:"notesBackup"});
     backupHandle=h; backupActive=true;
     await DB.put("meta",{k:"backupDir",v:h});
     setBackupUI(true,"Backup folder connected"); writeBackup(); toast("Auto-backup on");
@@ -2085,10 +2085,12 @@ async function writeBackup(){
     return;
   }
   try{
-    const fh=await backupHandle.getFileHandle("glassy-notes-backup.json",{create:true});
+    const fh=await backupHandle.getFileHandle("notes-file.json",{create:true});
     const w=await fh.createWritable();
     await w.write(JSON.stringify(exportData(),null,2));
     await w.close();
+    // migrate users of the old filename: the new file is written, so drop the legacy one
+    try{ await backupHandle.removeEntry("glassy-notes-backup.json"); }catch(e){ /* not present */ }
     // folder reachable again — clear the local-only state
     const wasPending=backupPending;
     backupPending=false; hideLocalOnly();
