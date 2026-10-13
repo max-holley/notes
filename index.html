@@ -117,7 +117,7 @@ body{font-family:var(--font);color:var(--text);overflow:hidden;background:var(--
 .tag-chip{font-size:12px;padding:4px 11px;border-radius:20px;background:var(--chip);color:var(--text-soft);cursor:pointer;border:1px solid transparent;transition:all .2s var(--ease)}
 .tag-chip:hover{transform:translateY(-1px);color:var(--text)}
 .tag-chip.active{background:var(--accent);color:#fff;border-color:transparent}
-.sidebar-footer{display:flex;gap:8px;padding-top:14px;border-top:1px solid var(--line);margin-top:8px}
+.sidebar-footer{display:flex;flex-wrap:wrap;gap:8px;padding-top:14px;border-top:1px solid var(--line);margin-top:8px}
 .icon-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;border-radius:12px;background:var(--chip);border:1px solid var(--glass-border);color:var(--text-soft);font-size:12px;font-weight:600;cursor:pointer;transition:all .25s var(--ease)}
 .icon-btn:hover{background:var(--hover);color:var(--text);transform:translateY(-1px)}
 .backup-btn{margin-top:8px;width:100%;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px;border-radius:12px;background:var(--chip);border:1px solid var(--glass-border);color:var(--text-soft);font-size:12.5px;font-weight:600;cursor:pointer;transition:all .25s var(--ease)}
@@ -528,6 +528,9 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
           <button class="icon-btn" id="exportBtn">⤓ Export</button>
           <button class="icon-btn" id="importBtn">⤒ Import</button>
           <input type="file" id="importFile" accept="application/json" hidden>
+          <button class="icon-btn" id="exportMdBtn" title="Export the open note (or all notes) as Markdown">⤓ .md</button>
+          <button class="icon-btn" id="importMdBtn" title="Import Markdown files as notes">⤒ .md</button>
+          <input type="file" id="importMdFile" accept=".md,.markdown,.txt,text/markdown" multiple hidden>
         </div>
         <button class="backup-btn" id="backupBtn"><span id="backupBtnInner">◎ Auto-backup off</span></button>
         <div class="backup-status" id="backupStatus"></div>
@@ -2033,6 +2036,145 @@ document.getElementById("importFile").onchange=e=>{
     e.target.value="";
   };
   reader.readAsText(file);
+};
+
+/* ================= MARKDOWN EXPORT / IMPORT ================= */
+const PANEL_TYPES=["info","note","success","warning","error"];
+function htmlToMd(html){
+  const root=document.createElement("div"); root.innerHTML=html||"";
+  const Z=new RegExp(String.fromCharCode(0x200B),"g");
+  const inline=n=>{
+    if(n.nodeType===3) return n.textContent.replace(Z,"").replace(/ /g," ");
+    if(n.nodeType!==1) return "";
+    const t=n.tagName, inner=()=>[...n.childNodes].map(inline).join("");
+    switch(t){
+      case "B":case "STRONG": { const s=inner(); return s.trim()?"**"+s+"**":s; }
+      case "I":case "EM": { const s=inner(); return s.trim()?"*"+s+"*":s; }
+      case "S":case "STRIKE":case "DEL": return "~~"+inner()+"~~";
+      case "CODE": return "`"+n.textContent+"`";
+      case "A": return "["+inner()+"]("+(n.getAttribute("href")||"")+")";
+      case "BR": return "  \n";
+      case "IMG": return "![]("+(n.getAttribute("src")||"").slice(0,2000)+")";
+      default: return inner();
+    }
+  };
+  const list=(el,ordered,depth)=>[...el.children].filter(li=>li.tagName==="LI").map((li,i)=>{
+    const pad="  ".repeat(depth);
+    const task=li.classList.contains("ck-item");
+    const mark=task?(li.classList.contains("checked")?"- [x] ":"- [ ] "):(ordered?(i+1)+". ":"- ");
+    const text=[...li.childNodes].filter(c=>!(c.nodeType===1&&/^[UO]L$/.test(c.tagName))).map(inline).join("").trim();
+    const subs=[...li.children].filter(c=>/^[UO]L$/.test(c.tagName)).map(c=>list(c,c.tagName==="OL",depth+1));
+    return pad+mark+text+(subs.length?"\n"+subs.join("\n"):"");
+  }).join("\n");
+  const block=n=>{
+    if(n.nodeType===3){ const s=inline(n).trim(); return s; }
+    if(n.nodeType!==1) return "";
+    const t=n.tagName;
+    if(/^H[1-6]$/.test(t)) return "#".repeat(+t[1])+" "+inline(n).trim();
+    if(t==="UL"||t==="OL") return list(n,t==="OL",0);
+    if(t==="PRE") return "```\n"+n.textContent.replace(/\n$/,"")+"\n```";
+    if(t==="HR") return "---";
+    if(t==="BLOCKQUOTE") return blocks(n).split("\n").map(l=>"> "+l).join("\n");
+    if(t==="TABLE"){
+      const rows=[...n.rows].map(r=>[...r.cells].map(c=>inline(c).trim().replace(/\|/g,"\\|").replace(/\n/g," ")));
+      if(!rows.length) return "";
+      const w=Math.max(...rows.map(r=>r.length));
+      const fmt=r=>"| "+Array.from({length:w},(_,i)=>r[i]||"").join(" | ")+" |";
+      return [fmt(rows[0]),"| "+Array(w).fill("---").join(" | ")+" |",...rows.slice(1).map(fmt)].join("\n");
+    }
+    if(t==="DIV"&&n.classList.contains("cpanel")){
+      const type=PANEL_TYPES.find(p=>n.classList.contains("cpanel-"+p))||"info";
+      return ("> [!"+type.toUpperCase()+"]\n"+blocks(n)).split("\n").map(l=>l.startsWith("> ")?l:"> "+l).join("\n");
+    }
+    if(t==="DIV"||t==="P"){
+      if(n.querySelector(":scope > p, :scope > ul, :scope > ol, :scope > table, :scope > pre, :scope > div")) return blocks(n);
+      return inline(n).trim();
+    }
+    return inline(n).trim();
+  };
+  const blocks=el=>[...el.childNodes].map(block).filter(s=>s!=="").join("\n\n");
+  return blocks(root);
+}
+function mdInline(s){
+  const codes=[];
+  s=esc(s).replace(/`([^`]+)`/g,(_,c)=>{ codes.push(c); return "\u0000"+(codes.length-1)+"\u0000"; });
+  s=s.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g,(_,a,u)=>/^(https?:|data:image\/)/i.test(u)?'<img alt="'+a+'" src="'+u+'">':"")
+     .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,(_,a,u)=>/^(https?:|mailto:|#|\/)/i.test(u)?'<a href="'+u+'">'+a+"</a>":a)
+     .replace(/\*\*([^*]+)\*\*|__([^_]+)__/g,(_,a,b)=>"<b>"+(a||b)+"</b>")
+     .replace(/(^|[^*])\*([^*\s][^*]*)\*/g,"$1<i>$2</i>")
+     .replace(/(^|\W)_([^_\s][^_]*)_(?=\W|$)/g,"$1<i>$2</i>")
+     .replace(/~~([^~]+)~~/g,"<s>$1</s>");
+  return s.replace(/\u0000(\d+)\u0000/g,(_,i)=>"<code>"+codes[i]+"</code>");
+}
+function mdToHtml(md){
+  const L=md.replace(/\r\n?/g,"\n").split("\n"); const out=[]; let i=0;
+  const isBlockStart=l=>/^(#{1,6}\s|```|>|\s*([-*+]|\d+\.)\s|\s*(---+|\*\*\*+)\s*$|\|)/.test(l);
+  const listHtml=(indent)=>{
+    const first=L[i].match(/^(\s*)([-*+]|\d+\.)\s/); const ordered=/\d/.test(first[2]);
+    const items=[]; let task=false;
+    while(i<L.length){
+      const m=L[i].match(/^(\s*)([-*+]|\d+\.)\s+(.*)$/);
+      if(!m||m[1].length<indent) break;
+      if(m[1].length>indent){ items[items.length-1].sub=(items[items.length-1].sub||"")+listHtml(m[1].length); continue; }
+      let text=m[3], cls="";
+      const tk=text.match(/^\[([ xX])\]\s+(.*)$/);
+      if(tk){ task=true; text=tk[2]; cls=' class="ck-item'+(tk[1]===" "?"":" checked")+'"'; }
+      items.push({cls,text,sub:""}); i++;
+    }
+    const tag=ordered?"ol":"ul";
+    return "<"+tag+(task?' class="checklist"':"")+">"+items.map(it=>"<li"+it.cls+">"+mdInline(it.text)+it.sub+"</li>").join("")+"</"+tag+">";
+  };
+  while(i<L.length){
+    const l=L[i];
+    if(!l.trim()){ i++; continue; }
+    let m;
+    if(/^```/.test(l)){ const buf=[]; i++; while(i<L.length&&!/^```/.test(L[i])) buf.push(L[i++]); i++; out.push("<pre>"+esc(buf.join("\n"))+"</pre>"); }
+    else if((m=l.match(/^(#{1,6})\s+(.*?)\s*#*\s*$/))){ out.push("<h"+m[1].length+">"+mdInline(m[2])+"</h"+m[1].length+">"); i++; }
+    else if(/^\s*(---+|\*\*\*+|___+)\s*$/.test(l)){ out.push("<hr>"); i++; }
+    else if(/^>/.test(l)){
+      const buf=[]; while(i<L.length&&/^>/.test(L[i])) buf.push(L[i++].replace(/^>\s?/,""));
+      const pm=buf[0].match(/^\[!(\w+)\]\s*$/); const type=pm&&PANEL_TYPES.find(p=>p===pm[1].toLowerCase());
+      if(type) out.push('<div class="cpanel cpanel-'+type+'">'+(mdToHtml(buf.slice(1).join("\n"))||"<p><br></p>")+"</div>");
+      else out.push("<blockquote>"+mdToHtml(buf.join("\n"))+"</blockquote>");
+    }
+    else if(/^\s*([-*+]|\d+\.)\s/.test(l)){ out.push(listHtml(l.match(/^\s*/)[0].length)); }
+    else if(/^\|/.test(l)&&/^\|?\s*:?-+/.test(L[i+1]||"")){
+      const cells=r=>r.replace(/^\||\|\s*$/g,"").split(/(?<!\\)\|/).map(c=>mdInline(c.trim().replace(/\\\|/g,"|")));
+      const head=cells(l); i+=2; const rows=[];
+      while(i<L.length&&/^\|/.test(L[i])) rows.push(cells(L[i++]));
+      out.push("<table><thead><tr>"+head.map(c=>"<th>"+c+"</th>").join("")+"</tr></thead><tbody>"+rows.map(r=>"<tr>"+head.map((_,j)=>"<td>"+(r[j]||"&nbsp;")+"</td>").join("")+"</tr>").join("")+"</tbody></table>");
+    }
+    else { const buf=[]; while(i<L.length&&L[i].trim()&&(!buf.length||!isBlockStart(L[i]))) buf.push(L[i++]); out.push("<p>"+buf.map(s=>mdInline(s.replace(/\s+$/,""))).join("<br>")+"</p>"); }
+  }
+  return out.join("");
+}
+function mdFileName(t){ return (t||"Untitled").replace(/[\\/:*?"<>|]+/g,"-").trim().slice(0,80)||"Untitled"; }
+document.getElementById("exportMdBtn").onclick=()=>{
+  if(current){ current.body=doc.innerHTML; current.title=document.getElementById("titleInput").value; }
+  const list=current?[current]:notes;
+  if(!list.length){ toast("Nothing to export"); return; }
+  list.forEach((n,k)=>setTimeout(()=>{
+    const md="# "+(n.title||"Untitled")+"\n\n"+htmlToMd(n.body)+"\n";
+    const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([md],{type:"text/markdown"}));
+    a.download=mdFileName(n.title)+".md"; a.click(); URL.revokeObjectURL(a.href);
+  },k*150));
+  toast("Exported "+list.length+(list.length===1?" note":" notes")+" as Markdown");
+};
+document.getElementById("importMdBtn").onclick=()=>document.getElementById("importMdFile").click();
+document.getElementById("importMdFile").onchange=async e=>{
+  const files=[...e.target.files]; let added=0;
+  for(const f of files){
+    let text=await f.text();
+    text=text.replace(/^---\n[\s\S]*?\n---\n/,"");
+    let title=f.name.replace(/\.(md|markdown|txt)$/i,"");
+    const h=text.match(/^\s*#\s+(.+)\n?/);
+    if(h){ title=h[1].trim(); text=text.slice(h[0].length+text.indexOf(h[0])); }
+    const n={id:uid(),title,body:mdToHtml(text),category:categories[0]?.id||null,tags:[],pinned:false,created:Date.now(),updated:Date.now()};
+    notes.push(n); await DB.put("notes",n); added++;
+  }
+  e.target.value="";
+  if(added){ renderAll(); scheduleBackup(); }
+  toast(added?"Imported "+added+(added===1?" note":" notes")+" from Markdown":"No files selected");
 };
 
 /* ================= OFFLINE AUTO-BACKUP (File System Access API) ================= */
