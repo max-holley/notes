@@ -733,6 +733,21 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
   </div>
 </div>
 
+<!-- Unarchive category modal -->
+<div class="modal-back" id="unarchModal">
+  <div class="modal confirm-modal" role="dialog" aria-label="Unarchive category">
+    <div class="danger-icon" style="background:var(--active);color:var(--accent)">▤</div>
+    <h3>Unarchive this category?</h3>
+    <p class="confirm-text" id="unarchText"></p>
+    <div class="modal-actions" style="flex-direction:column">
+      <button class="btn-primary" id="unarchRestore">Restore notes</button>
+      <button class="btn-ghost" id="unarchKeep">Keep notes archived</button>
+      <button class="btn-danger" id="unarchDelete">Delete notes permanently</button>
+      <button class="btn-ghost" id="unarchCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- Tags modal -->
 <div class="modal-back" id="tagModal">
   <div class="modal tag-modal">
@@ -1158,9 +1173,19 @@ function setNoteArchived(id,val,quiet){
   renderAll(); scheduleBackup(); toast(val?"Note archived":"Note unarchived");
 }
 function toggleNoteArchived(id){ const n=notes.find(x=>x.id===id); if(n) setNoteArchived(id,!n.archived); }
-function setCategoryArchived(id,val){
+function setCategoryArchived(id,val,notesAction){
   const c=categories.find(x=>x.id===id); if(!c) return;
   c.archived=val; DB.put("categories",c);
+  if(!val && notesAction){
+    const mine=notes.filter(n=>n.category===id&&n.archived);
+    if(notesAction==="restore") mine.forEach(n=>setNoteArchived(n.id,false,true));
+    else if(notesAction==="delete"){
+      if(current&&current.category===id&&current.archived){ clearTimeout(saveTimer); saveTimer=null; closeEditor(); }
+      mine.forEach(n=>DB.del("notes",n.id));
+      notes=notes.filter(n=>!mine.includes(n));
+    }
+    if(current) syncArchiveBtn();
+  }
   if(val){
     notes.filter(n=>n.category===id&&!n.archived).forEach(n=>setNoteArchived(n.id,true,true));
     if(current&&current.archived&&!showArchived) closeEditor();
@@ -1171,7 +1196,15 @@ function setCategoryArchived(id,val){
 }
 function requestCategoryArchive(id,val){
   const c=categories.find(x=>x.id===id); if(!c) return;
-  const n=val?notes.filter(x=>x.category===id&&!x.archived).length:0;
+  if(!val){
+    const k=notes.filter(x=>x.category===id&&x.archived).length;
+    if(!k){ setCategoryArchived(id,false); return; }
+    document.getElementById("unarchText").innerHTML=`<b>${esc(c.name)}</b> has ${k} archived note${k!==1?"s":""}. Restore ${k!==1?"them":"it"}, or delete ${k!==1?"them":"it"} permanently? Deleting can’t be undone.`;
+    unarchCatId=id;
+    document.getElementById("unarchModal").classList.add("show");
+    return;
+  }
+  const n=notes.filter(x=>x.category===id&&!x.archived).length;
   if(!n){ setCategoryArchived(id,val); return; }
   openConfirm({
     icon:"▤", title:"Archive this category?",
@@ -1179,6 +1212,18 @@ function requestCategoryArchive(id,val){
     confirmLabel:"Archive", onConfirm:()=>setCategoryArchived(id,true)
   });
 }
+let unarchCatId=null;
+function closeUnarch(act){
+  const id=unarchCatId; unarchCatId=null;
+  document.getElementById("unarchModal").classList.remove("show");
+  if(id&&act) setCategoryArchived(id,false,act==="keep"?null:act);
+}
+document.getElementById("unarchRestore").onclick=()=>closeUnarch("restore");
+document.getElementById("unarchKeep").onclick=()=>closeUnarch("keep");
+document.getElementById("unarchDelete").onclick=()=>closeUnarch("delete");
+document.getElementById("unarchCancel").onclick=()=>closeUnarch(null);
+document.getElementById("unarchModal").onclick=e=>{ if(e.target.id==="unarchModal") closeUnarch(null); };
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && unarchCatId) closeUnarch(null); });
 function setShowArchived(v){
   showArchived=v;
   const b=document.getElementById("archToggle");
