@@ -32,6 +32,13 @@ const server=http.createServer((req,res)=>{
   try {
     await page.goto(url);await page.waitForFunction(()=>categories.length===3);
     await test('Create and title a note',async()=>{await page.getByRole('button',{name:'Create a note',exact:true}).click();await page.locator('#titleInput').fill('Editor regression');});
+    await test('Checklist converts each selected paragraph and line to its own item',async()=>{
+      await setDoc('<p>one</p><p>two<br>three</p><p>four</p>','p');
+      await page.evaluate(()=>{const ps=doc.querySelectorAll('p');const r=document.createRange();r.setStart(ps[0].firstChild,1);r.setEnd(ps[2].firstChild,2);const s=getSelection();s.removeAllRanges();s.addRange(r);insertChecklist();});
+      const items=await page.$$eval('ul.checklist > li',l=>l.map(x=>x.textContent));
+      assert.deepEqual(items,['one','two','three','four']);
+      assert.equal(await page.locator('ul.checklist').count(),1);
+    });
     await test('Panel insertion places caret inside',async()=>{
       await setDoc('<p><br></p>','p');
       await page.locator('#panelDD .dd-toggle').click();await page.locator('[data-panel="info"]').click();
