@@ -393,12 +393,12 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
 .ctx-menu .ctx-sep{height:1px;background:var(--line);margin:5px 6px}
 
 /* checklist — checkbox is drawn in CSS so the caret flows normally in the text */
-.doc ul.checklist{list-style:none;padding-left:4px;margin:8px 0}
-.doc ul.checklist li{position:relative;margin:4px 0;padding-left:30px;min-height:24px}
-.doc ul.checklist li::before{content:"";position:absolute;left:2px;top:50%;transform:translateY(-50%);width:19px;height:19px;border-radius:6px;border:2px solid var(--text-faint);background:var(--glass);cursor:pointer;box-sizing:border-box;transition:background .18s var(--ease),border-color .18s var(--ease)}
+.doc ul.checklist{list-style:none;padding-left:0;margin:8px 0}
+.doc ul.checklist li{position:relative;margin:6px 0;padding:6px 10px 6px 38px;min-height:24px;border:1.5px solid color-mix(in srgb,var(--accent) 45%,transparent);border-radius:10px;background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.doc ul.checklist li::before{content:"";position:absolute;left:10px;top:50%;transform:translateY(-50%);width:19px;height:19px;border-radius:6px;border:2px solid var(--text-faint);background:var(--glass);cursor:pointer;box-sizing:border-box;transition:background .18s var(--ease),border-color .18s var(--ease)}
 .doc ul.checklist li:hover::before{border-color:var(--accent)}
 .doc ul.checklist li.checked::before{background:var(--accent);border-color:transparent;transform:translateY(-50%)}
-.doc ul.checklist li.checked::after{content:"";position:absolute;left:9px;top:50%;width:4px;height:8px;border:solid #fff;border-width:0 2.4px 2.4px 0;transform:translateY(-60%) rotate(45deg);pointer-events:none}
+.doc ul.checklist li.checked::after{content:"";position:absolute;left:17px;top:50%;width:4px;height:8px;border:solid #fff;border-width:0 2.4px 2.4px 0;transform:translateY(-60%) rotate(45deg);pointer-events:none}
 .doc ul.checklist li.checked{color:var(--text-faint);text-decoration:line-through}
 
 /* bottom-left "saving locally only" indicator (shown when the backup folder isn't reachable yet) */
@@ -1209,9 +1209,45 @@ function currentTopBlock(){
   while(n && n.parentNode!==doc) n=n.parentNode;
   return (n && n.parentNode===doc) ? n : null;
 }
+/* top-level blocks touched by a non-collapsed selection (null when collapsed) */
+function selectedTopBlocks(){
+  const sel=window.getSelection();
+  if(!sel.rangeCount||sel.isCollapsed) return null;
+  const range=sel.getRangeAt(0);
+  if(!doc.contains(range.commonAncestorContainer)) return null;
+  const blocks=[...doc.children].filter(b=>range.intersectsNode(b));
+  return blocks.length?blocks:null;
+}
+/* split a block's HTML into one string per line (<br> = line break), dropping empty lines */
+function checklistLines(html){
+  return html.split(/<br\s*\/?>/i).filter(l=>l.replace(/<[^>]*>|&nbsp;/g,"").trim());
+}
+/* turn every selected paragraph / line / list item into its own checkbox item */
+function convertSelectionToChecklist(blocks){
+  const makeItem=html=>{ const li=document.createElement("li"); li.className="ck-item"; li.innerHTML=html; return li; };
+  let ul=null, first=null, last=null;
+  blocks.forEach(b=>{
+    let items=[];
+    if(b.classList.contains("checklist")){ ul=null; return; }
+    if(b.tagName==="UL"||b.tagName==="OL") items=[...b.children].filter(c=>c.tagName==="LI").flatMap(li=>checklistLines(li.innerHTML));
+    else if(/^(P|DIV|H[1-6]|BLOCKQUOTE)$/.test(b.tagName)&&!b.classList.contains("cpanel")) items=checklistLines(b.innerHTML);
+    else { ul=null; return; }
+    if(!items.length){ ul=null; return; }
+    if(ul) b.remove();                       // continue the current run
+    else { ul=document.createElement("ul"); ul.className="checklist"; b.replaceWith(ul); }
+    items.forEach(h=>{ const li=makeItem(h); ul.appendChild(li); first=first||li; last=li; });
+  });
+  if(!first) return false;
+  const r=document.createRange(); r.setStart(first,0); r.setEnd(last,last.childNodes.length);
+  const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+  ensureTrailingRow(); commitEditorChange();
+  return true;
+}
 function insertChecklist(){
   if(!current) return;
   doc.focus();
+  const selBlocks=selectedTopBlocks();
+  if(selBlocks&&convertSelectionToChecklist(selBlocks)) return;
   const ul=document.createElement("ul"); ul.className="checklist";
   const li=document.createElement("li"); li.className="ck-item";
   ul.appendChild(li);
@@ -1232,6 +1268,8 @@ function toggleChecklist(){
   doc.focus();
   const sel=window.getSelection();
   let li=null;
+  const selBlocks=selectedTopBlocks();
+  if(selBlocks&&!selBlocks.every(b=>b.classList.contains("checklist"))){ insertChecklist(); return; }
   if(sel.rangeCount){
     let node=sel.getRangeAt(0).startContainer; if(node.nodeType===3) node=node.parentElement;
     li=node&&node.closest?node.closest("li"):null;
@@ -1271,7 +1309,7 @@ doc.addEventListener("click",e=>{
   const li=e.target.closest&&e.target.closest("li");
   if(!li||!doc.contains(li)||!li.closest("ul.checklist")) return;
   const rect=li.getBoundingClientRect();
-  if(e.clientX-rect.left<=26){
+  if(e.clientX-rect.left<=34){
     e.preventDefault();
     li.classList.toggle("checked");
     if(current){ current.body=doc.innerHTML; scheduleSave(); }
