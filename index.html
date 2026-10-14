@@ -394,12 +394,38 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
 
 /* checklist — checkbox is drawn in CSS so the caret flows normally in the text */
 .doc ul.checklist{list-style:none;padding-left:0;margin:8px 0}
-.doc ul.checklist li{position:relative;margin:6px 0;padding:6px 10px 6px 38px;min-height:24px;border:1.5px solid color-mix(in srgb,var(--accent) 45%,transparent);border-radius:10px;background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.doc ul.checklist li{position:relative;margin:10px 0;padding:9px 10px 9px 38px;min-height:24px;border:1.5px solid color-mix(in srgb,var(--accent) 45%,transparent);border-radius:10px;background:color-mix(in srgb,var(--accent) 7%,transparent)}
 .doc ul.checklist li::before{content:"";position:absolute;left:10px;top:50%;transform:translateY(-50%);width:19px;height:19px;border-radius:6px;border:2px solid var(--text-faint);background:var(--glass);cursor:pointer;box-sizing:border-box;transition:background .18s var(--ease),border-color .18s var(--ease)}
 .doc ul.checklist li:hover::before{border-color:var(--accent)}
 .doc ul.checklist li.checked::before{background:var(--accent);border-color:transparent;transform:translateY(-50%)}
 .doc ul.checklist li.checked::after{content:"";position:absolute;left:17px;top:50%;width:4px;height:8px;border:solid #fff;border-width:0 2.4px 2.4px 0;transform:translateY(-60%) rotate(45deg);pointer-events:none}
 .doc ul.checklist li.checked{color:var(--text-faint);text-decoration:line-through}
+
+.list-actions{display:flex;align-items:center;gap:4px}
+.arch-btn{width:28px;height:28px;padding:0;border:none;border-radius:7px;background:transparent;color:var(--text-faint);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s var(--ease),color .2s var(--ease)}
+.arch-btn:hover{background:var(--hover);color:var(--text)}
+.arch-btn[aria-pressed="true"]{background:var(--active);color:var(--accent)}
+.arch-btn svg{width:17px;height:17px}
+.note-card.archived{opacity:.6}
+.nav-item.archived{opacity:.55}
+.section-label .cats-link{cursor:pointer}
+.section-label .cats-link:hover{text-decoration:underline}
+.foot-actions{display:flex;align-items:center;gap:2px}
+.arch-note-btn{background:none;border:none;color:var(--text-faint);font-size:12px;cursor:pointer;padding:5px 10px;border-radius:9px;transition:all .2s}
+.arch-note-btn:hover{background:var(--hover);color:var(--text)}
+.cats-modal{width:380px}
+.cats-list{max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;margin-bottom:16px}
+.cats-row{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;font-size:14px}
+.cats-row:hover{background:var(--hover)}
+.cats-row .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.cats-row .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cats-row .ct{font-size:11px;color:var(--text-faint);flex-shrink:0}
+.cats-row.archived .nm{color:var(--text-faint)}
+.cats-row .sw-lbl{margin-left:auto;font-size:11px;color:var(--text-faint)}
+.switch{position:relative;width:34px;height:20px;border-radius:20px;border:none;padding:0;background:var(--chip);cursor:pointer;flex-shrink:0;transition:background .2s var(--ease)}
+.switch:after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s var(--ease)}
+.switch[aria-checked="true"]{background:var(--accent)}
+.switch[aria-checked="true"]:after{transform:translateX(14px)}
 
 /* bottom-left "saving locally only" indicator (shown when the backup folder isn't reachable yet) */
 .local-only{position:fixed;bottom:18px;left:18px;z-index:190;display:none;align-items:center;gap:9px;background:var(--glass-strong);backdrop-filter:blur(20px) saturate(1.6);-webkit-backdrop-filter:blur(20px) saturate(1.6);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);padding:9px 13px;border-radius:13px;font-size:12px;color:var(--text-soft);max-width:300px;line-height:1.3}
@@ -507,7 +533,7 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
       <h1>Notes</h1>
     </div>
 
-    <div class="section-label">Categories <button id="addCatBtn" title="New category">+</button></div>
+    <div class="section-label"><span class="cats-link" id="catsLink" role="button" tabindex="0" title="Manage categories">Categories</span> <button id="addCatBtn" title="New category">+</button></div>
     <div class="nav" id="catNav"></div>
 
     <div class="section-label">Tags</div>
@@ -547,7 +573,10 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
     <div class="list-head"><input class="search" id="search" aria-label="Search notes" placeholder="Search notes…"></div>
     <div class="list-title">
       <h2 id="listTitle">All Notes</h2>
+      <div class="list-actions">
+      <button class="arch-btn" id="archToggle" aria-pressed="false" aria-label="Show archived notes" title="Show archived notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></button>
       <button class="new-btn" id="newNoteBtn" aria-label="New note" title="New note (Ctrl+N)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M15 4l5 5M9 15l1-5L19 1l4 4-9 9z"/></svg></button>
+      </div>
     </div>
     <div class="notes" id="noteList"></div>
   </section>
@@ -661,7 +690,10 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
       <div class="doc" id="doc" role="textbox" aria-label="Note content" aria-multiline="true" contenteditable="true" data-placeholder="Start writing…"></div>
       <div class="editor-foot">
         <span id="stats">0 words</span>
-        <button class="del-btn" id="delBtn">Delete note</button>
+        <div class="foot-actions">
+          <button class="arch-note-btn" id="archNoteBtn">Archive note</button>
+          <button class="del-btn" id="delBtn">Delete note</button>
+        </div>
       </div>
     </div>
   </section>
@@ -686,6 +718,17 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
     <div class="modal-actions">
       <button class="btn-ghost" id="catCancel">Cancel</button>
       <button class="btn-primary" id="catSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Categories manager modal -->
+<div class="modal-back" id="catsModal">
+  <div class="modal cats-modal" role="dialog" aria-label="Categories">
+    <h3>Categories</h3>
+    <div class="cats-list" id="catsList"></div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="catsDone">Done</button>
     </div>
   </div>
 </div>
@@ -763,12 +806,15 @@ body.row-resizing,.row-resizing *{cursor:row-resize!important;user-select:none!i
 <!-- Category context menu -->
 <div class="ctx-menu" id="catCtxMenu">
   <button data-act="edit"><span class="ctx-ico">✎</span>Edit category</button>
+  <button data-act="archive"><span class="ctx-ico">▤</span><span id="catCtxArchLbl">Archive category</span></button>
   <div class="ctx-sep"></div>
   <button class="danger" data-act="delete"><span class="ctx-ico">🗑</span>Delete category</button>
 </div>
 
 <!-- Note context menu -->
 <div class="ctx-menu" id="noteCtxMenu">
+  <button data-act="archive"><span class="ctx-ico">▤</span><span id="noteCtxArchLbl">Archive note</span></button>
+  <div class="ctx-sep"></div>
   <button class="danger" data-act="delete"><span class="ctx-ico">🗑</span>Delete note</button>
 </div>
 
@@ -810,6 +856,7 @@ const DB={ _db:null,
 let notes=[], categories=[], current=null;
 let filterCat="all", filterTags=[], searchQ="";
 let saveTimer=null;
+let showArchived=false;
 let justCreatedId=null;
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const SWATCH_COLORS=["#5b6cff","#ff5b95","#34c759","#ff9f0a","#af52de","#00c7be","#ff453a","#8e8e93"];
@@ -870,10 +917,12 @@ function buildAccentSwatches(){
 /* ================= RENDER ================= */
 function renderAll(){ renderCats(); renderTags(); renderList(); }
 function noteIsOther(n){ return !n.category || !categories.some(c=>c.id===n.category); }
+function noteVisible(n){ return showArchived || !n.archived; }
 function noteCount(catId){
-  if(catId==="all") return notes.length;
-  if(catId==="__other__") return notes.filter(noteIsOther).length;
-  return notes.filter(n=>n.category===catId).length;
+  const vis=notes.filter(noteVisible);
+  if(catId==="all") return vis.length;
+  if(catId==="__other__") return vis.filter(noteIsOther).length;
+  return vis.filter(n=>n.category===catId).length;
 }
 function catTitle(id){ return id==="all"?"All Notes":(id==="__other__"?"Other":(categories.find(c=>c.id===id)?.name||"Other")); }
 
@@ -883,7 +932,8 @@ function renderCats(){
       <span class="dot" style="background:var(--accent)"></span><span class="label">All Notes</span>
       <span class="count">${noteCount('all')}</span></div>`;
   for(const c of categories){
-    html+=`<div class="nav-item ${filterCat===c.id?'active':''}" data-cat="${c.id}" draggable="true">
+    if(c.archived && !showArchived) continue;
+    html+=`<div class="nav-item ${filterCat===c.id?'active':''}${c.archived?' archived':''}" data-cat="${c.id}" draggable="true">
       <span class="dot" style="background:${c.color}"></span><span class="label">${esc(c.name)}</span>
       <span class="count">${noteCount(c.id)}</span></div>`;
   }
@@ -939,6 +989,7 @@ function renderTags(){
 
 function filteredNotes(){
   return notes.filter(n=>{
+    if(!noteVisible(n)) return false;
     if(filterCat!=="all" && filterCat!=="__other__" && n.category!==filterCat) return false;
     if(filterCat==="__other__" && !noteIsOther(n)) return false;
     if(filterTags.length && !filterTags.every(t=>(n.tags||[]).includes(t))) return false;
@@ -951,7 +1002,7 @@ function filteredNotes(){
 function cardHtml(n){
   const cat=categories.find(c=>c.id===n.category);
   const tags=(n.tags||[]).slice(0,3).map(t=>`<span class="mini-tag">#${esc(t)}</span>`).join("");
-  return `<div class="note-card ${current&&current.id===n.id?'active':''}" data-id="${n.id}">
+  return `<div class="note-card ${current&&current.id===n.id?'active':''}${n.archived?' archived':''}" data-id="${n.id}">
     <button class="pin-btn ${n.pinned?'pinned':''}" data-pin="${n.id}" title="${n.pinned?'Unpin':'Pin'}">
       <svg viewBox="0 0 24 24" fill="${n.pinned?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>
     </button>
@@ -959,7 +1010,7 @@ function cardHtml(n){
     <p>${esc(stripHtml(n.body).slice(0,120))||"No content"}</p>
     <div class="note-meta">
       ${cat?`<span class="mini-tag" style="background:${cat.color}22;color:${cat.color}">${esc(cat.name)}</span>`:`<span class="mini-tag" style="background:var(--chip);color:var(--text-faint)">Other</span>`}
-      ${tags}<span class="date">${fmtDate(n.updated)}</span>
+      ${n.archived?`<span class="mini-tag">Archived</span>`:""}${tags}<span class="date">${fmtDate(n.updated)}</span>
     </div></div>`;
 }
 
@@ -1029,7 +1080,7 @@ function openNote(id){
   document.getElementById("doc").innerHTML=current.body||"";
   ensureTrailingRow();
   resetEditorHistory();
-  renderCatPick(); renderTagPills(); syncHeadPin(); updateStats(); setActiveCard(current.id);
+  renderCatPick(); renderTagPills(); syncHeadPin(); syncArchiveBtn(); updateStats(); setActiveCard(current.id);
   closeDrawer(); if(isMobile()) setMobileView("editor");
 }
 function setActiveCard(id){
@@ -1040,7 +1091,7 @@ function renderCatPick(){
   document.getElementById("catPickLabel").textContent=cat?cat.name:"Other";
   document.getElementById("catPickDot").style.background=cat?cat.color:"var(--text-faint)";
   const menu=document.getElementById("catPickMenu");
-  let html=categories.map(c=>`<button data-cat="${c.id}" class="${current.category===c.id?'sel':''}"><span class="cat-dot" style="background:${c.color}"></span>${esc(c.name)}</button>`).join("");
+  let html=categories.filter(c=>!c.archived||c.id===current.category).map(c=>`<button data-cat="${c.id}" class="${current.category===c.id?'sel':''}"><span class="cat-dot" style="background:${c.color}"></span>${esc(c.name)}</button>`).join("");
   html+=`<button data-cat="" class="${!cat?'sel':''}"><span class="cat-dot" style="background:var(--text-faint)"></span>Other</button>`;
   menu.innerHTML=html;
   menu.querySelectorAll("button").forEach(b=>{
@@ -1086,6 +1137,84 @@ function updateCard(n){
   card.querySelector("p").textContent=stripHtml(n.body).slice(0,120)||"No content";
   const dateEl=card.querySelector(".note-meta .date"); if(dateEl) dateEl.textContent=fmtDate(n.updated);
 }
+/* ================= ARCHIVE ================= */
+function syncArchiveBtn(){
+  const b=document.getElementById("archNoteBtn"); if(!b||!current) return;
+  b.textContent=current.archived?"Unarchive note":"Archive note";
+}
+function closeEditor(){
+  current=null;
+  document.getElementById("editor").classList.remove("show");
+  document.getElementById("editorEmpty").style.display="flex";
+  if(isMobile()) setMobileView("list");
+}
+function setNoteArchived(id,val,quiet){
+  const n=notes.find(x=>x.id===id); if(!n) return;
+  if(current&&current.id===id) flushSave();
+  n.archived=val; DB.put("notes",n);
+  if(quiet) return;
+  if(val && !showArchived && current&&current.id===id) closeEditor();
+  else if(current&&current.id===id) syncArchiveBtn();
+  renderAll(); scheduleBackup(); toast(val?"Note archived":"Note unarchived");
+}
+function toggleNoteArchived(id){ const n=notes.find(x=>x.id===id); if(n) setNoteArchived(id,!n.archived); }
+function setCategoryArchived(id,val){
+  const c=categories.find(x=>x.id===id); if(!c) return;
+  c.archived=val; DB.put("categories",c);
+  if(val){
+    notes.filter(n=>n.category===id&&!n.archived).forEach(n=>setNoteArchived(n.id,true,true));
+    if(current&&current.archived&&!showArchived) closeEditor();
+    if(filterCat===id&&!showArchived){ filterCat="all"; document.getElementById("listTitle").textContent="All Notes"; }
+  }
+  if(current) renderCatPick();
+  renderAll(); renderCatsModal(); scheduleBackup(); toast(val?"Category archived":"Category unarchived");
+}
+function requestCategoryArchive(id,val){
+  const c=categories.find(x=>x.id===id); if(!c) return;
+  const n=val?notes.filter(x=>x.category===id&&!x.archived).length:0;
+  if(!n){ setCategoryArchived(id,val); return; }
+  openConfirm({
+    icon:"▤", title:"Archive this category?",
+    html:`<b>${esc(c.name)}</b> has ${n} note${n!==1?"s":""}. ${n!==1?"They":"It"} will be archived too.`,
+    confirmLabel:"Archive", onConfirm:()=>setCategoryArchived(id,true)
+  });
+}
+function setShowArchived(v){
+  showArchived=v;
+  const b=document.getElementById("archToggle");
+  b.setAttribute("aria-pressed",v);
+  const t=v?"Hide archived notes":"Show archived notes";
+  b.title=t; b.setAttribute("aria-label",t);
+  if(!v){
+    if(categories.some(c=>c.id===filterCat&&c.archived)){ filterCat="all"; document.getElementById("listTitle").textContent="All Notes"; }
+    if(current&&current.archived) closeEditor();
+  }
+  renderAll();
+}
+document.getElementById("archToggle").addEventListener("click",()=>setShowArchived(!showArchived));
+document.getElementById("archNoteBtn").addEventListener("click",()=>{ if(current) toggleNoteArchived(current.id); });
+
+/* categories manager modal */
+const catsModal=document.getElementById("catsModal");
+function renderCatsModal(){
+  const box=document.getElementById("catsList");
+  box.innerHTML=categories.length?categories.map(c=>{
+    const n=notes.filter(x=>x.category===c.id).length;
+    return `<div class="cats-row${c.archived?' archived':''}" data-id="${c.id}"><span class="dot" style="background:${c.color}"></span><span class="nm">${esc(c.name)}</span><span class="ct">${n}</span><span class="sw-lbl">Archived</span><button class="switch" role="switch" aria-checked="${!!c.archived}" aria-label="Archived: ${esc(c.name)}"></button></div>`;
+  }).join(""):`<div class="tag-empty">No categories yet.</div>`;
+  box.querySelectorAll(".switch").forEach(b=>b.onclick=()=>{
+    const id=b.closest(".cats-row").dataset.id, c=categories.find(x=>x.id===id);
+    requestCategoryArchive(id,!c.archived);
+  });
+}
+function openCatsModal(){ renderCatsModal(); catsModal.classList.add("show"); }
+function closeCatsModal(){ catsModal.classList.remove("show"); }
+document.getElementById("catsLink").addEventListener("click",openCatsModal);
+document.getElementById("catsLink").addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openCatsModal(); } });
+document.getElementById("catsDone").onclick=closeCatsModal;
+catsModal.onclick=e=>{ if(e.target===catsModal) closeCatsModal(); };
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && !document.getElementById("confirmModal").classList.contains("show")) closeCatsModal(); });
+
 function deleteNote(){ if(current) deleteNoteById(current.id); }
 function deleteNoteById(id){
   if(current?.id===id){ clearTimeout(saveTimer); saveTimer=null; }
@@ -1882,8 +2011,12 @@ function positionCtx(menu,x,y){
   menu.style.left=Math.max(8,Math.min(x, window.innerWidth-mw-8))+"px";
   menu.style.top=Math.max(8,Math.min(y, window.innerHeight-mh-8))+"px";
 }
-function openCatCtxMenu(e,catId){ hideCtxMenus(); ctxCatId=catId; positionCtx(document.getElementById("catCtxMenu"),e.clientX,e.clientY); }
-function openNoteCtxMenu(e,noteId){ hideCtxMenus(); ctxNoteId=noteId; positionCtx(document.getElementById("noteCtxMenu"),e.clientX,e.clientY); }
+function openCatCtxMenu(e,catId){ hideCtxMenus(); ctxCatId=catId;
+  document.getElementById("catCtxArchLbl").textContent=categories.find(c=>c.id===catId)?.archived?"Unarchive category":"Archive category";
+  positionCtx(document.getElementById("catCtxMenu"),e.clientX,e.clientY); }
+function openNoteCtxMenu(e,noteId){ hideCtxMenus(); ctxNoteId=noteId;
+  document.getElementById("noteCtxArchLbl").textContent=notes.find(n=>n.id===noteId)?.archived?"Unarchive note":"Archive note";
+  positionCtx(document.getElementById("noteCtxMenu"),e.clientX,e.clientY); }
 document.addEventListener("click",hideCtxMenus);
 document.addEventListener("scroll",hideCtxMenus,true);
 window.addEventListener("blur",hideCtxMenus);
@@ -1892,12 +2025,14 @@ document.getElementById("catCtxMenu").addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b) return;
   const act=b.dataset.act, id=ctxCatId; hideCtxMenus();
   if(act==="edit") openCatModal(id);
+  else if(act==="archive") requestCategoryArchive(id,!categories.find(c=>c.id===id)?.archived);
   else if(act==="delete") confirmDeleteCategory(id);
 });
 document.getElementById("noteCtxMenu").addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b) return;
   const act=b.dataset.act, id=ctxNoteId; hideCtxMenus();
-  if(act==="delete") confirmDeleteNote(id);
+  if(act==="archive") toggleNoteArchived(id);
+  else if(act==="delete") confirmDeleteNote(id);
 });
 
 /* editor selection right-click: clear formatting on highlighted text */
@@ -1933,7 +2068,7 @@ async function deleteCategory(id){
   for(const n of notes){ if(n.category===id){ n.category=null; await DB.put("notes",n); } }
   if(filterCat===id){ filterCat="all"; document.getElementById("listTitle").textContent="All Notes"; }
   if(current && current.category===id){ current.category=null; renderCatPick(); }
-  renderAll(); scheduleBackup(); toast("Category deleted");
+  renderAll(); renderCatsModal(); scheduleBackup(); toast("Category deleted");
 }
 
 /* ================= TAGS MODAL ================= */
