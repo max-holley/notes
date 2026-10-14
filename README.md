@@ -40,3 +40,6 @@ The suite uses an isolated browser profile and temporary local HTTP server. It c
 ## Markdown export / import
 
 **Export** asks for a format: JSON (all notes and categories) or Markdown (the open note, or every note if none is open, one `.md` file each). **Import** accepts `.json` and `.md` files together and detects the type per file; each Markdown file becomes a new note (a leading `# Title` becomes the note title). Markdown supports headings, bold/italic/strike, code, links, lists, checklists (`- [ ]`), tables, quotes, and panels (as `> [!INFO]`-style alerts).
+
+
+*
