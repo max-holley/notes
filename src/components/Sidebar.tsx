@@ -41,10 +41,9 @@ function Section({
     <Accordion expanded={expanded} onChange={(_, v) => onToggle(v)} slotProps={{ transition: { unmountOnExit: false } }} data-testid={`sidebar-${id}`}>
       <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
         <AccordionSummary
-          expandIcon={<ExpandMoreOutlined />}
           aria-controls={`${id}-content`}
           id={`${id}-header`}
-          sx={{ flex: 1, minHeight: 48, px: 2, '& .MuiAccordionSummary-content': { alignItems: 'center', gap: 1, my: 0, minWidth: 0 } }}
+          sx={{ flex: 1, minHeight: 48, pl: 2, pr: 1, '& .MuiAccordionSummary-content': { alignItems: 'center', gap: 1, my: 0, minWidth: 0 } }}
         >
           <Typography variant="subtitle2" component="h2">
             {title}
@@ -57,6 +56,14 @@ function Section({
           {!expanded && active && <Chip size="small" label={active} color="secondary" sx={{ maxWidth: 120 }} data-testid={`${id}-active-filter`} />}
         </AccordionSummary>
         {actions}
+        <Box
+          aria-hidden
+          onClick={() => onToggle(!expanded)}
+          sx={{ display: 'grid', placeItems: 'center', width: 32, height: 32, ml: 0.5, cursor: 'pointer', color: 'text.secondary', transition: 'transform 150ms', transform: expanded ? 'rotate(180deg)' : 'none' }}
+          data-testid={`${id}-expand-icon`}
+        >
+          <ExpandMoreOutlined />
+        </Box>
       </Box>
       <AccordionDetails id={`${id}-content`} sx={{ px: 1, pt: 0, pb: 1 }}>
         {children}

@@ -51,7 +51,7 @@ function SectionView({ node, updateAttributes, editor }: ReactNodeViewProps) {
           my: 1,
           p: 1,
           pr: 2,
-          borderRadius: 3,
+          borderRadius: 1,
           bgcolor: `sections.${type}.container`,
           color: `sections.${type}.onContainer`,
         }}

@@ -53,7 +53,7 @@ export function NoteTagsDialog({ open, noteId, onClose }: { open: boolean; noteI
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
           {note.tags.length} on this note · {tags.length} total
         </Typography>
-        <List dense component="div">
+        <List dense component="div" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           {query && !exact && (
             <ListItemButton onClick={submit}>
               <ListItemIcon><AddOutlined /></ListItemIcon>

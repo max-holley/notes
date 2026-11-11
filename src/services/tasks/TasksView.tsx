@@ -107,7 +107,7 @@ export function TasksView() {
                         ui.set({ view: 'notes' });
                         ui.openNote(l.noteId, l.lineId);
                       }}
-                      sx={{ borderRadius: 2, pr: 16 }}
+                      sx={{ borderRadius: 1, pr: 16 }}
                     >
                       <ListItemText primary={l.title || 'Untitled task'} slotProps={{ primary: { sx: { textDecoration: l.completed ? 'line-through' : undefined } } }} />
                     </ListItemButton>
