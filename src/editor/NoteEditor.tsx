@@ -38,6 +38,7 @@ import { useNotes } from '../store/notes.ts';
 import { toast, useUi } from '../store/ui.ts';
 import { buildExtensions } from './extensions/index.ts';
 import { LinkUi, openLinkEditor, type LinkUiState } from './LinkUi.tsx';
+import { openEditors } from './openEditors.ts';
 import { editorContentSx } from './styles.ts';
 import { Toolbar } from './Toolbar.tsx';
 
@@ -178,6 +179,13 @@ export function NoteEditor({ noteId, compact }: { noteId: string; compact: boole
     onBlur: () => flush(),
   });
   editorRef.current = editor;
+  useEffect(() => {
+    if (!editor) return;
+    openEditors.set(noteId, editor);
+    return () => {
+      if (openEditors.get(noteId) === editor) openEditors.delete(noteId);
+    };
+  }, [editor, noteId]);
 
   // Flush pending edits when switching notes / unmounting / hiding the page.
   useEffect(() => {

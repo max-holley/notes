@@ -10,7 +10,6 @@ test.afterEach(() => expect(errors, 'no uncaught browser errors').toEqual([]));
 
 const card = (page: import('@playwright/test').Page, title: string) =>
   page.getByTestId('note-card').filter({ has: page.getByTestId('note-card-title').getByText(title, { exact: true }) });
-const title = (page: import('@playwright/test').Page) => page.getByTestId('note-title').locator('textarea').first();
 
 test('Create category and assign to note', async ({ page }) => {
   await signIn(page);

@@ -14,3 +14,6 @@
 | 10 | Note has `editedAt` (content edits, shown/sorted) and `updatedAt` (any change, LWW) | Single field | Legacy: pinning must not change "updated", but sync needs every change stamped. |
 | 11 | Plain right-click on a link opens the link menu; table row/column menu needs Ctrl/Shift+right-click; everything else keeps the native spell-check menu | Always intercept | REBUILD.md spellcheck rule. |
 | 12 | Accent is also cached in localStorage (`notes-accent`) next to theme + font | Only theme + font | Accent is part of the theme; prevents a colour flash on load. |
+| 13 | Integrations patch open notes through the live Tiptap editor (`src/editor/openEditors.ts`) and reconcile reads open editors' live HTML | Write stored HTML only | Avoids lost task ids when the user is typing (editor save would overwrite the store write). |
+| 14 | Undo after a grace-period Google Task deletion recreates the task and appends the line to its original note | Undo only before deletion | The line is already gone from every note when deletion happens; recreating is the only meaningful undo. |
+| 15 | Task lines in Recently deleted notes still count as present (no Google deletion until the note is deleted forever) | Treat trash as absent | Restoring a note shouldn't lose its tasks. |

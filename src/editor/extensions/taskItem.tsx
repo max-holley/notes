@@ -151,6 +151,8 @@ export const NotesTaskItem = TaskItem.extend({
         'data-checked': String(!!node.attrs.checked),
         ...(node.attrs.lineId ? { 'data-line-id': node.attrs.lineId as string } : {}),
         ...(node.attrs.taskLine ? { 'data-task-line': 'true' } : {}),
+        ...(node.attrs.taskId ? { 'data-task-id': node.attrs.taskId as string } : {}),
+        ...(node.attrs.due ? { 'data-due': node.attrs.due as string } : {}),
       }),
     });
   },

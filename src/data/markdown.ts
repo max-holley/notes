@@ -201,7 +201,7 @@ export function markdownToHtml(md: string): string {
 
 /** Split a Markdown file into title (leading `# Title`) + HTML body. Front matter is stripped. */
 export function markdownToNote(md: string, fallbackTitle: string): { title: string; body: string } {
-  let text = md.replace(/^﻿/, '').replace(/^---\n[\s\S]*?\n---\n?/, '');
+  let text = md.replace(/^\s+/, '').replace(/^---\n[\s\S]*?\n---\n?/, '');
   let title = fallbackTitle;
   const m = text.match(/^\s*#\s+(.+)\n?/);
   if (m) {
