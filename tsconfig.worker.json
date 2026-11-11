@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "types": ["@cloudflare/workers-types", "@cloudflare/vitest-pool-workers"],
+    "tsBuildInfoFile": "node_modules/.tmp/worker.tsbuildinfo"
+  },
+  "include": ["worker", "src/services/registry.ts", "src/services/types.manifest.ts", "src/services/*/manifest.ts", "src/brand/brand.config.ts"]
+}
