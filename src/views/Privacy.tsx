@@ -40,7 +40,7 @@ export function Privacy() {
             {s.title}
           </Typography>
           {s.body.map((p, i) => (
-            <Typography key={i} variant="body1" color="text.secondary" paragraph>
+            <Typography key={i} variant="body1" color="text.secondary" sx={{ mb: 2 }}>
               {p}
             </Typography>
           ))}

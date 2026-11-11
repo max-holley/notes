@@ -40,7 +40,7 @@ export async function getToken(scopes: string[], force = false): Promise<string>
   let p = pending.get(key);
   if (!p) {
     p = api
-      .token(scopes)
+      .token(scopes, force)
       .then((r) => {
         const e = { token: r.access_token, exp: r.expires_at };
         tokens.set(key, e);

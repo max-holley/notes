@@ -18,11 +18,11 @@ const TOKEN_EARLY_REFRESH_MS = 5 * 60 * 1000;
 export const CSRF_HEADER = 'X-Requested-With';
 export const CSRF_VALUE = 'notes-app';
 
-interface User { id: string; google_sub: string; email: string; name: string | null; picture_url: string | null }
-interface Grant { user_id: string; scopes: string; refresh_token_enc: string; iv: string; invalid_at: number | null }
-interface StatePayload { v: string; r: string; n: string; exp: number; mode: 'signin' | 'connect' }
+export interface User { id: string; google_sub: string; email: string; name: string | null; picture_url: string | null }
+export interface Grant { user_id: string; scopes: string; refresh_token_enc: string; iv: string; invalid_at: number | null }
+export interface StatePayload { v: string; r: string; n: string; exp: number; mode: 'signin' | 'connect' }
 
-type Vars = { user: User; sessionHash: string; ring: KeyRing };
+export type Vars = { user: User; sessionHash: string; ring: KeyRing };
 type C = Context<{ Bindings: Env; Variables: Vars }>;
 
 // ---------------------------------------------------------------- per-isolate caches
@@ -280,6 +280,8 @@ export function createApp() {
     if (missing.length) return c.json({ error: 'scope_not_granted', scopes: missing }, 403);
 
     const key = `${u.id}|${[...requested].sort().join(' ')}`;
+    // force=1: the browser got a 401 from Google with the cached token, so mint a fresh one.
+    if (c.req.query('force') === '1') for (const k of tokenCache.keys()) if (k.startsWith(u.id + '|')) tokenCache.delete(k);
     const cached = tokenCache.get(key);
     if (cached && cached.exp - TOKEN_EARLY_REFRESH_MS > now()) return c.json({ access_token: cached.token, expires_at: cached.exp, scopes: cached.scopes });
     // A cached token for a superset of scopes is fine too.

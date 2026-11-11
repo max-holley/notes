@@ -7,7 +7,6 @@ import Container from '@mui/material/Container';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import CalendarMonthOutlined from '@mui/icons-material/CalendarMonthOutlined';
 import EditNoteOutlined from '@mui/icons-material/EditNoteOutlined';
 import LockOutlined from '@mui/icons-material/LockOutlined';
 import TaskAltOutlined from '@mui/icons-material/TaskAltOutlined';

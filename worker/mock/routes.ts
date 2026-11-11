@@ -108,7 +108,7 @@ function touch(f: MockFile) {
   f.headRevisionId = mockId('rev-');
 }
 
-function newFile(sub: string, meta: Partial<MockFile>, content = new Uint8Array(), contentType = 'application/octet-stream'): MockFile {
+function newFile(sub: string, meta: Partial<MockFile>, content: Uint8Array = new Uint8Array(), contentType = 'application/octet-stream'): MockFile {
   const f: MockFile = {
     id: mockId('file-'), owner: sub, name: meta.name ?? 'Untitled', mimeType: meta.mimeType ?? contentType,
     parents: meta.parents ?? ['root'], appProperties: meta.appProperties ?? {}, trashed: false,
@@ -177,7 +177,7 @@ mockRoutes.get('/googleapis/drive/v3/files/:id', (c) => {
   const a = authed(c, DRIVE); if (isResp(a)) return a;
   const f = ownFile(c, a.sub); if (isResp(f)) return f;
   if (c.req.query('alt') === 'media') {
-    return new Response(f.content, { headers: { 'Content-Type': f.contentType, 'X-Goog-Revision': f.headRevisionId } });
+    return new Response(new Uint8Array(f.content), { headers: { 'Content-Type': f.contentType, 'X-Goog-Revision': f.headRevisionId } });
   }
   return c.json(fileMeta(f));
 });

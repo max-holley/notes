@@ -28,6 +28,10 @@ export interface GoogleService<Client = unknown> extends ServiceManifest {
   settingsPanel?: ComponentType<{ connected: boolean }>;
   /** Sync lifecycle hooks. */
   syncHooks?: { onStart?(): void; onFocus?(): void; onInterval?(): void };
+  /** Extra items for the open note's "more" menu (e.g. Open event / Refresh details). */
+  noteMenuItems?: ComponentType<{ noteId: string; close(): void }>;
+  /** Dialogs owned by the service (mounted once in the workspace). */
+  dialogs?: ComponentType;
   /** Called with ids of notes changed locally. */
   onNoteChange?(noteIds: string[]): void;
   /** One-line onboarding text (landing page + consent explainer). */

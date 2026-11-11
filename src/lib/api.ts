@@ -46,7 +46,8 @@ export const api = {
   logout: () => call<{ ok: true }>('/api/auth/logout', { method: 'POST' }),
   sessions: () => call<DeviceSession[]>('/api/sessions'),
   revokeSession: (id: string) => call<{ ok: true }>(`/api/sessions/${encodeURIComponent(id)}`, { method: 'DELETE' }),
-  token: (scopes: string[]) => call<{ access_token: string; expires_at: number; scopes: string[] }>(`/api/token?scopes=${encodeURIComponent(scopes.join(' '))}`),
+  token: (scopes: string[], force = false) =>
+    call<{ access_token: string; expires_at: number; scopes: string[] }>(`/api/token?scopes=${encodeURIComponent(scopes.join(' '))}${force ? '&force=1' : ''}`),
   connect: (body: { service?: string; reconnect?: boolean; return?: string }) =>
     call<{ url: string }>('/api/services/connect', { method: 'POST', body: JSON.stringify(body) }),
   disconnect: (service: string) => call<{ ok: true }>('/api/services/disconnect', { method: 'POST', body: JSON.stringify({ service }) }),

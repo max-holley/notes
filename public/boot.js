@@ -12,5 +12,7 @@
       system: 'system-ui, -apple-system, "Segoe UI", sans-serif'
     };
     if (font && stacks[font]) document.documentElement.style.setProperty('--app-font', stacks[font]);
-  } catch (e) {}
+  } catch {
+    /* storage unavailable: defaults apply */
+  }
 })();

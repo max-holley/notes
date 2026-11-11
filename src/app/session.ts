@@ -50,7 +50,9 @@ async function startSync(me: Me) {
   if (working || pending.length) useNotes.getState().load(start);
 
   let saveTimer: ReturnType<typeof setTimeout> | null = null;
+  let stopped = false;
   const saveWorking = (doc: NotesDoc) => {
+    if (stopped) return;
     if (saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(() => void outbox.saveWorking(userId, doc).catch(() => undefined), 300);
   };
@@ -82,7 +84,7 @@ async function startSync(me: Me) {
     },
     onStatus: (s, info) => useUi.getState().set({ sync: s, syncRetryIn: info?.retryInMs ?? null, ...(s === 'reconnect' ? { needsReconnect: true } : {}) }),
     onSizeWarning: (bytes) => toast(`Your notes file is ${(bytes / 1048576).toFixed(0)} MB. Consider archiving or deleting large notes.`),
-    lock: typeof navigator !== 'undefined' && navigator.locks ? (fn) => navigator.locks.request(`notes-sync-${userId}`, fn) : undefined,
+    lock: typeof navigator !== 'undefined' && navigator.locks ? <T,>(fn: () => Promise<T>) => navigator.locks.request(`notes-sync-${userId}`, fn) as unknown as Promise<T> : undefined,
   });
 
   setChangeSink({
@@ -118,6 +120,10 @@ async function startSync(me: Me) {
   }, SYNC.pollMs);
   for (const s of services) s.syncHooks?.onStart?.();
   teardown = [
+    () => {
+      stopped = true;
+      if (saveTimer) clearTimeout(saveTimer);
+    },
     () => document.removeEventListener('visibilitychange', onVisibility),
     () => window.removeEventListener('pagehide', onPageHide),
     () => window.removeEventListener('focus', onFocus),

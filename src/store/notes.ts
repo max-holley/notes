@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { emptyDoc, tombKey, uid, type Category, type Note, type NotesDoc, type Prefs, type TaskLink } from '../data/model.ts';
+import { emptyDoc, tombKey, uid, type Category, type Note, type NotesDoc, type Prefs, type Tag, type TaskLink } from '../data/model.ts';
 import { DEFAULT_CATEGORY_COLORS } from '../theme/tokens.ts';
 import { mergeDocs, type Change } from '../sync/merge.ts';
 
@@ -50,13 +50,15 @@ interface NotesState {
   setTaskLink(link: TaskLink): void;
   removeTaskLink(taskId: string): void;
   setTaskListId(id: string | null): void;
+  /** Bulk insert/overwrite (import). */
+  importItems(items: { notes: Note[]; categories: Category[]; tags: string[] }): void;
 }
 
 const normTag = (t: string) => t.trim().replace(/^#+/, '').slice(0, 30);
 
 export const useNotes = create<NotesState>()((set, get) => {
   /** Apply item writes (value null = delete with tombstone) and notify the sink. */
-  function write(items: { col: Col; id: string; value: { updatedAt: number } | null }[], extra?: Change[]) {
+  function write(items: { col: Col; id: string; value: Note | Category | Tag | TaskLink | null }[], extra?: Change[]) {
     const now = Date.now();
     const doc = structuredClone(get().doc);
     const changes: Change[] = [];
@@ -188,7 +190,7 @@ export const useNotes = create<NotesState>()((set, get) => {
       const t = normTag(tag);
       if (!n || !t) return;
       const tags = n.tags.includes(t) ? n.tags.filter((x) => x !== t) : [...n.tags, t];
-      const items: { col: Col; id: string; value: { updatedAt: number } | null }[] = [{ col: 'notes', id: noteId, value: { ...n, tags, updatedAt: Date.now() } }];
+      const items: { col: Col; id: string; value: Note | Category | Tag | TaskLink | null }[] = [{ col: 'notes', id: noteId, value: { ...n, tags, updatedAt: Date.now() } }];
       if (!get().doc.tags[t]) items.push({ col: 'tags', id: t, value: { name: t, updatedAt: Date.now() } });
       write(items);
     },
@@ -200,6 +202,14 @@ export const useNotes = create<NotesState>()((set, get) => {
     setTaskLink: (link) => write([{ col: 'taskLinks', id: link.taskId, value: { ...link, updatedAt: Date.now() } }]),
     removeTaskLink: (taskId) => write([{ col: 'taskLinks', id: taskId, value: null }]),
     setTaskListId: (id) => write([], [{ key: 'taskListId', col: 'taskListId', id: 'taskListId', value: id, at: Date.now() }]),
+    importItems({ notes, categories, tags }) {
+      const t = Date.now();
+      write([
+        ...categories.map((c) => ({ col: 'categories' as const, id: c.id, value: c })),
+        ...notes.map((n) => ({ col: 'notes' as const, id: n.id, value: n })),
+        ...tags.filter((g) => !get().doc.tags[g]).map((g) => ({ col: 'tags' as const, id: g, value: { name: g, updatedAt: t } })),
+      ]);
+    },
   };
 });
 

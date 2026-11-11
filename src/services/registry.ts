@@ -53,6 +53,5 @@ export function buildCsp(list: readonly ServiceManifest[] = serviceManifests): s
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self' https://accounts.google.com",
-    'upgrade-insecure-requests',
   ].join('; ');
 }
