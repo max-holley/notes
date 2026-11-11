@@ -65,7 +65,8 @@ async function reconcileOnce() {
     switch (a.type) {
       case 'create': {
         const t = await tasksClient.insert(listId, { title: a.line.title || 'Untitled task', completed: a.line.completed, due: a.line.due, notes: deepLink(a.line.noteId) });
-        linePatches.push({ noteId: a.line.noteId, lineId: a.line.lineId, patch: { taskId: t.id } });
+        // Write the task id into the line right away: a later failure in this run must not orphan the task.
+        patchNoteLines(a.line.noteId, new Map([[a.line.lineId, { taskId: t.id }]]));
         useNotes.getState().setTaskLink({ taskId: t.id, noteId: a.line.noteId, lineId: a.line.lineId, title: a.line.title, completed: a.line.completed, due: a.line.due, remoteUpdated: t.updated, missingSince: null, updatedAt: 0 });
         break;
       }
@@ -125,7 +126,12 @@ export function reconcileTasks(): Promise<void> {
     again = true;
     return running;
   }
-  running = reconcileOnce()
+  const userId = useUi.getState().me?.user.id ?? 'anon';
+  // One reconcile across all tabs, otherwise two tabs could both create the same task.
+  const locked = typeof navigator !== 'undefined' && navigator.locks
+    ? (navigator.locks.request(`tasks-reconcile-${userId}`, () => reconcileOnce()) as unknown as Promise<void>)
+    : reconcileOnce();
+  const run: Promise<void> = locked
     .catch((e: unknown) => {
       console.warn('Tasks sync failed', e instanceof Error ? e.message : 'error');
     })
@@ -136,7 +142,8 @@ export function reconcileTasks(): Promise<void> {
         void reconcileTasks();
       }
     });
-  return running;
+  running = run;
+  return run;
 }
 
 /** Debounced reconcile after note edits. */

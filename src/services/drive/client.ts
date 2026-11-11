@@ -2,7 +2,7 @@ import { brand } from '../../brand/brand.config.ts';
 import type { NotesDoc } from '../../data/model.ts';
 import { HttpError } from '../../lib/api.ts';
 import { normalizeDoc } from '../../sync/merge.ts';
-import type { Transport } from '../../sync/engine.ts';
+import { ConflictError, TransientError, type Transport } from '../../sync/engine.ts';
 import { authFetch, authJson } from '../http.ts';
 import { driveManifest } from './manifest.ts';
 
@@ -69,7 +69,14 @@ function multipart(meta: object, body: string, type: string) {
 /** Drive transport for the sync engine: Notes/notes-file.json. */
 export const driveTransport: Transport = {
   async pull() {
-    const f = ids.data ? await authJson<DriveFile>(`${API}/files/${ids.data}?fields=${FIELDS}`, { scopes: SCOPES }).catch(() => null) : await findByProp('data');
+    // Only a 404 or a trashed file means "no data file". Anything else (rate limit, 5xx, network) must not
+    // be mistaken for an empty Drive, or a second notes-file.json would be created.
+    const f = ids.data
+      ? await authJson<DriveFile>(`${API}/files/${ids.data}?fields=${FIELDS}`, { scopes: SCOPES }).catch((e: unknown) => {
+          if (e instanceof HttpError && e.status === 404) return null;
+          throw e instanceof HttpError && e.status !== 403 ? e : new TransientError(String(e));
+        })
+      : await findByProp('data');
     if (!f || (f as DriveFile & { trashed?: boolean }).trashed) {
       delete ids.data;
       return { doc: null, rev: null };
@@ -80,10 +87,13 @@ export const driveTransport: Transport = {
     const text = await res.text();
     return { doc: text ? normalizeDoc(JSON.parse(text) as Partial<NotesDoc>) : null, rev: f.headRevisionId ?? f.modifiedTime };
   },
-  async push(doc) {
+  async push(doc, baseRev) {
     const json = JSON.stringify(doc);
     let f: DriveFile;
     if (ids.data) {
+      // Read-merge-write guard: if another device wrote since our pull, re-run the merge instead of overwriting.
+      const head = await authJson<DriveFile>(`${API}/files/${ids.data}?fields=${FIELDS}`, { scopes: SCOPES });
+      if (baseRev && (head.headRevisionId ?? head.modifiedTime) !== baseRev) throw new ConflictError('Drive file changed since pull');
       f = await authJson<DriveFile>(`${UPLOAD}/files/${ids.data}?uploadType=media&fields=${FIELDS}`, {
         scopes: SCOPES,
         method: 'PATCH',
@@ -141,9 +151,18 @@ export async function collectImageGarbage(doc: NotesDoc, minAgeMs = 24 * 3600 * 
   const used = new Set<string>();
   for (const n of Object.values(doc.notes)) for (const m of n.body.matchAll(/data-drive-id="([^"]+)"/g)) used.add(m[1]!);
   const q = `appProperties has { key='${PROP}' and value='image' } and trashed = false`;
-  const res = await authJson<{ files: DriveFile[] }>(`${API}/files?q=${encodeURIComponent(q)}&fields=files(${FIELDS})`, { scopes: SCOPES });
+  const all: DriveFile[] = [];
+  let page: string | undefined;
+  do {
+    const res = await authJson<{ files: DriveFile[]; nextPageToken?: string }>(
+      `${API}/files?q=${encodeURIComponent(q)}&pageSize=1000&fields=nextPageToken,files(${FIELDS})${page ? `&pageToken=${encodeURIComponent(page)}` : ''}`,
+      { scopes: SCOPES },
+    );
+    all.push(...res.files);
+    page = res.nextPageToken;
+  } while (page);
   let n = 0;
-  for (const f of res.files) {
+  for (const f of all) {
     if (!used.has(f.id) && Date.now() - Date.parse(f.modifiedTime) > minAgeMs) {
       await authJson(`${API}/files/${f.id}`, { scopes: SCOPES, method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trashed: true }) });
       n++;

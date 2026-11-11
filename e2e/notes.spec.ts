@@ -334,3 +334,14 @@ test('Image insert is compressed and stored as a separate Drive file', async ({ 
   expect(Number(img.size)).toBeLessThan(buf.length);
   await tb(page, 'undo');
 });
+
+test('Send to Google Doc converts the open note and opens it', async ({ page, context, request }) => {
+  const email = await signIn(page);
+  await newNote(page, 'Doc export', 'Hello from the note');
+  await page.getByTestId('note-more').click();
+  const [popup] = await Promise.all([context.waitForEvent('page'), page.getByTestId('send-to-doc').click()]);
+  await popup.waitForURL(/\/__mock\/docs\//);
+  await expect(popup.locator('#doc')).toContainText('Hello from the note');
+  const { files } = await driveDoc(request, email);
+  expect(files.some((f) => f.mimeType === 'application/vnd.google-apps.document' && f.name === 'Doc export')).toBe(true);
+});

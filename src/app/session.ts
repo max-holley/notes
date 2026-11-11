@@ -12,6 +12,7 @@ import { toast, useUi } from '../store/ui.ts';
 
 let engine: SyncEngine | null = null;
 let teardown: (() => void)[] = [];
+let syncChannel: BroadcastChannel | null = null;
 
 export const getEngine = () => engine;
 
@@ -61,7 +62,9 @@ async function startSync(me: Me) {
   channel?.addEventListener('message', (ev: MessageEvent<{ type: string; changes?: Change[] }>) => {
     if (ev.data.type === 'changes' && ev.data.changes) useNotes.getState().applyForeign(ev.data.changes);
     if (ev.data.type === 'synced') engine?.pullIfStale();
+    if (ev.data.type === 'signout') void wipeLocal().then(() => location.assign('/'));
   });
+  syncChannel = channel;
 
   let remoteWasEmpty = false;
   const transport: Transport = {
@@ -161,6 +164,7 @@ export async function signOut() {
     // best effort: unsynced edits are discarded on explicit sign-out
   }
   await api.logout().catch(() => undefined);
+  syncChannel?.postMessage({ type: 'signout' }); // other tabs wipe their local data too
   await wipeLocal();
   location.assign('/');
 }

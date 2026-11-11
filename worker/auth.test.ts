@@ -61,6 +61,29 @@ describe('OAuth start + PKCE', () => {
     expect(safeReturn('//evil.com')).toBe('/app');
     expect(safeReturn('https://evil.com')).toBe('/app');
     expect(safeReturn('/\\evil.com')).toBe('/app');
+    expect(safeReturn('/\t/evil.com')).toBe('/app');
+    expect(safeReturn('/\n/evil.com')).toBe('/app');
+    expect(safeReturn('/app?note=a#x')).toBe('/app?note=a#x');
+  });
+
+  it('rejects a connect flow completed with a different Google account', async () => {
+    const { jar } = await signIn({ email: 'owner@example.com', untick: [CAL] });
+    const res = await req('/api/services/connect', { method: 'POST', jar, csrf: true, body: JSON.stringify({ service: 'calendar' }), headers: { 'Content-Type': 'application/json' } });
+    const { url } = await res.json<{ url: string }>();
+    const p = new URL(url).searchParams;
+    expect(p.get('login_hint')).toBe('owner@example.com');
+    const form = new URLSearchParams();
+    for (const k of ['client_id', 'redirect_uri', 'state', 'code_challenge', 'access_type', 'include_granted_scopes', 'prompt']) form.set(k, p.get(k) ?? '');
+    form.set('email', 'other@example.com');
+    form.set('decision', 'allow');
+    for (const s of (p.get('scope') ?? '').split(' ')) form.append('scope', s);
+    const approve = await req('/__mock/oauth/approve', { method: 'POST', body: form, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+    const cb = new URL(approve.headers.get('Location')!);
+    const done = await req(cb.pathname + cb.search, { jar });
+    expect(done.headers.get('Location')).toContain('auth_error=account_mismatch');
+    const me = await (await req('/api/me', { jar })).json<{ user: { email: string }; services: string[] }>();
+    expect(me.user.email).toBe('owner@example.com');
+    expect(me.services).not.toContain('calendar');
   });
 
   it('labels devices coarsely', () => {

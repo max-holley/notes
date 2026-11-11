@@ -57,9 +57,14 @@ export const outbox: OutboxLike & {
   },
   all: () => tx<Change[]>('outbox', 'readonly', (s) => s.getAll() as IDBRequest<Change[]>),
   async confirm(pushed) {
-    const current = new Map((await outbox.all()).map((c) => [c.key, c]));
+    // Compare and delete inside one readwrite transaction so a newer put() can't be dropped.
     await tx('outbox', 'readwrite', (s) => {
-      for (const p of pushed) if (current.get(p.key)?.at === p.at) s.delete(p.key);
+      for (const p of pushed) {
+        const r = s.get(p.key);
+        r.onsuccess = () => {
+          if ((r.result as Change | undefined)?.at === p.at) s.delete(p.key);
+        };
+      }
     });
   },
   clear: () => tx('outbox', 'readwrite', (s) => s.clear()),

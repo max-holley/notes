@@ -61,7 +61,13 @@ const cookieOpts = (c: C, maxAgeSec: number) => ({ httpOnly: true, secure: isSec
 const origin = (c: C) => new URL(c.req.url).origin;
 const redirectUri = (c: C) => `${origin(c)}/api/auth/callback`;
 /** Only same-origin relative paths are allowed as post-login destinations. */
-export const safeReturn = (r: string | undefined) => (r && r.startsWith('/') && !r.startsWith('//') && !r.startsWith('/\\') ? r : '/app');
+export function safeReturn(r: string | undefined): string {
+  // Reject protocol-relative tricks, backslashes and whitespace/control characters (browsers strip tabs/newlines).
+  // eslint-disable-next-line no-control-regex -- control characters are exactly what we reject
+  if (!r || r.includes('\\') || !/^\/(?!\/)[^\s\u0000-\u001f\u007f]*$/.test(r)) return '/app';
+  const u = new URL(r, 'https://app.invalid');
+  return u.origin === 'https://app.invalid' ? u.pathname + u.search + u.hash : '/app';
+}
 
 export function deviceLabel(ua: string | undefined): string {
   if (!ua) return 'Unknown device';
@@ -70,7 +76,7 @@ export function deviceLabel(ua: string | undefined): string {
   return `${browser} on ${os}`;
 }
 
-async function startAuth(c: C, scopes: string[], mode: StatePayload['mode'], returnTo: string, forceConsent: boolean): Promise<string> {
+async function startAuth(c: C, scopes: string[], mode: StatePayload['mode'], returnTo: string, forceConsent: boolean, loginHint?: string): Promise<string> {
   const ring = await keyRing(c.env);
   const verifier = randomId();
   const nonce = randomId();
@@ -87,6 +93,7 @@ async function startAuth(c: C, scopes: string[], mode: StatePayload['mode'], ret
     access_type: 'offline',
     include_granted_scopes: 'true',
     prompt: forceConsent ? 'consent select_account' : 'select_account',
+    ...(loginHint ? { login_hint: loginHint } : {}),
   });
 }
 
@@ -196,6 +203,14 @@ export function createApp() {
       return fail('exchange_failed');
     }
     const claims = decodeIdToken(tokens.id_token ?? '');
+    if (!claims.sub || !claims.email) return fail('missing_identity');
+    // Connect/reconnect from a signed-in session must use the same Google account.
+    const sid = getCookie(c, SESSION_COOKIE);
+    if (st.mode === 'connect' && sid) {
+      const owner = await c.env.DB.prepare('SELECT u.google_sub FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.id_hash = ?')
+        .bind(await sha256(sid)).first<{ google_sub: string }>();
+      if (owner && owner.google_sub !== claims.sub) return c.redirect(`${st.r}${st.r.includes('?') ? '&' : '?'}auth_error=account_mismatch`);
+    }
     const t = now();
     const existing = await c.env.DB.prepare('SELECT * FROM users WHERE google_sub = ?').bind(claims.sub).first<User>();
     const userId = existing?.id ?? randomId();
@@ -206,7 +221,12 @@ export function createApp() {
       await c.env.DB.prepare('INSERT INTO users (id, google_sub, email, name, picture_url, created_at, last_seen_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
         .bind(userId, claims.sub, claims.email, claims.name ?? null, claims.picture ?? null, t, t).run();
     }
-    const granted = filterAllowedScopes(tokens.scope.split(' '));
+    // Google reports identity scopes as userinfo.* URLs; normalise to the short names in the registry.
+    const IDENTITY_ALIASES: Record<string, string> = {
+      'https://www.googleapis.com/auth/userinfo.email': 'email',
+      'https://www.googleapis.com/auth/userinfo.profile': 'profile',
+    };
+    const granted = filterAllowedScopes(tokens.scope.split(' ').map((s) => IDENTITY_ALIASES[s] ?? s));
     const grant = await getGrant(c.env, userId);
     const ring = await keyRing(c.env);
     if (tokens.refresh_token) {
@@ -219,7 +239,7 @@ export function createApp() {
       await c.env.DB.prepare('UPDATE grants SET scopes = ?, updated_at = ? WHERE user_id = ?').bind(granted.join(' '), t, userId).run();
     } else {
       // No usable refresh token on file and Google didn't send one: ask again with forced consent.
-      return c.redirect(await startAuth(c, granted, st.mode, st.r, true));
+      return c.redirect(await startAuth(c, ['openid', 'email', 'profile', ...granted], st.mode, st.r, true, claims.email));
     }
     for (const k of tokenCache.keys()) if (k.startsWith(userId + '|')) tokenCache.delete(k);
     tokenCache.set(`${userId}|${[...granted].sort().join(' ')}`, { token: tokens.access_token, exp: t + tokens.expires_in * 1000, scopes: granted });
@@ -320,7 +340,7 @@ export function createApp() {
     const grant = await getGrant(c.env, c.get('user').id);
     const scopes = body.reconnect ? signInScopes() : svc?.scopes;
     if (!scopes) return c.json({ error: 'unknown_service' }, 400);
-    const url = await startAuth(c, ['openid', 'email', 'profile', ...scopes], 'connect', body.return ?? '/app', !!body.reconnect || !grant || !!grant.invalid_at);
+    const url = await startAuth(c, ['openid', 'email', 'profile', ...scopes], 'connect', body.return ?? '/app', !!body.reconnect || !grant || !!grant.invalid_at, c.get('user').email);
     return c.json({ url });
   });
 

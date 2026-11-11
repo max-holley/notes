@@ -8,11 +8,12 @@
 - [x] 6. Toolbar customise, font picker, settings, import/export, Send to Doc, images
 - [x] 7. Tasks module + Tasks view
 - [x] 8. Calendar module, meeting notes, Today panel, docs + new:service
-- [ ] 9. E2E/a11y, screenshots review, security + brand audits, privacy, README, remove legacy, review, REPORT.md
+- [x] 9. E2E/a11y, screenshots review, security + brand audits, privacy, README, remove legacy, review, REPORT.md
 
 ## Next
-Phase 9: brand audit + verify script, a11y (axe), screenshots review, security pass, README/BRANDING/privacy, CI, remove legacy/, fresh-eyes review, REPORT.md.
-E2E so far: e2e/auth.spec.ts, e2e/editor.spec.ts (legacy ports), e2e/notes.spec.ts — all green.
+Done. `pnpm verify` passes (typecheck, lint, unit, e2e in mock mode, brand audit). See REPORT.md.
 
 ## Known issues
-(none)
+None that can be fixed in code. These are out of scope or need a human (see REPORT.md, "Not tested / needs a human"):
+- Real Google OAuth/APIs and Cloudflare deployment were not exercised; they need credentials and an account.
+- Browsers other than Chromium, and real mobile devices, were not tested.

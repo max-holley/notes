@@ -21,6 +21,8 @@ export class ReconnectRequiredError extends Error {
 }
 /** Network failure or 5xx/429: retry with backoff. */
 export class TransientError extends Error {}
+/** The remote file changed between pull and push: re-run read-merge-write right away. */
+export class ConflictError extends Error {}
 
 export interface Transport {
   pull(): Promise<{ doc: NotesDoc | null; rev: string | null }>;
@@ -67,6 +69,7 @@ export class SyncEngine {
   private firstPendingAt: number | null = null;
   private retryTimer: unknown = null;
   private failures = 0;
+  private conflicts = 0;
   private inFlight: Promise<void> | null = null;
   private again = false;
   private stopped = false;
@@ -155,9 +158,14 @@ export class SyncEngine {
         await this.d.outbox.confirm(pending);
       });
       this.failures = 0;
+      this.conflicts = 0;
       this.lastSyncAt = this.t.now();
       if (!this.again) this.set('synced');
     } catch (error) {
+      if (error instanceof ConflictError && this.conflicts++ < 5) {
+        this.again = true;
+        return;
+      }
       if (error instanceof ReconnectRequiredError) {
         this.set('reconnect', { error });
         return;

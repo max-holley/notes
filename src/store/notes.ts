@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { emptyDoc, tombKey, uid, type Category, type Note, type NotesDoc, type Prefs, type Tag, type TaskLink } from '../data/model.ts';
 import { DEFAULT_CATEGORY_COLORS } from '../theme/tokens.ts';
-import { mergeDocs, type Change } from '../sync/merge.ts';
+import { applyChanges, mergeDocs, type Change } from '../sync/merge.ts';
 
 /** Receives every local change (outbox + working copy + broadcast + sync schedule). Set by the sync bootstrap. */
 export interface ChangeSink {
@@ -64,14 +64,18 @@ export const useNotes = create<NotesState>()((set, get) => {
     const changes: Change[] = [];
     for (const it of items) {
       const kind = ({ notes: 'note', categories: 'category', tags: 'tag', taskLinks: 'taskLink' } as const)[it.col];
+      let at = it.value?.updatedAt ?? now;
       if (it.value === null) {
+        // A tombstone must beat the item's own stamp even if another device's clock ran ahead.
+        const prev = (doc[it.col] as Record<string, { updatedAt: number }>)[it.id];
+        at = Math.max(now, (prev?.updatedAt ?? 0) + 1);
         delete (doc[it.col] as Record<string, unknown>)[it.id];
-        doc.tombstones[tombKey(kind, it.id)] = { kind, deletedAt: now };
+        doc.tombstones[tombKey(kind, it.id)] = { kind, deletedAt: at };
       } else {
         (doc[it.col] as Record<string, unknown>)[it.id] = it.value;
         delete doc.tombstones[tombKey(kind, it.id)];
       }
-      changes.push({ key: `${it.col}:${it.id}`, col: it.col, id: it.id, value: it.value, at: it.value?.updatedAt ?? now });
+      changes.push({ key: `${it.col}:${it.id}`, col: it.col, id: it.id, value: it.value, at });
     }
     for (const c of extra ?? []) {
       if (c.col === 'prefs') doc.prefs = c.value;
@@ -94,16 +98,8 @@ export const useNotes = create<NotesState>()((set, get) => {
     loaded: false,
     load: (doc) => set({ doc, loaded: true }),
     applyRemote: (remote) => set({ doc: mergeDocs(get().doc, remote), loaded: true }),
-    applyForeign(changes) {
-      const doc = structuredClone(get().doc);
-      for (const c of changes) {
-        if (c.col === 'prefs') doc.prefs = c.value;
-        else if (c.col === 'taskListId') doc.taskListId = c.value;
-        else if (c.value === null) delete (doc[c.col] as Record<string, unknown>)[c.id];
-        else (doc[c.col] as Record<string, unknown>)[c.id] = c.value;
-      }
-      set({ doc: mergeDocs(get().doc, doc) });
-    },
+    // Deletes arrive as tombstones so the merge can't resurrect them.
+    applyForeign: (changes) => set({ doc: applyChanges(get().doc, changes) }),
     reset: () => set({ doc: emptyDoc(), loaded: false }),
 
     createNote(init = {}) {

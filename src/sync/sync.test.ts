@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { emptyDoc, TOMBSTONE_TTL_MS, TRASH_TTL_MS, type Note, type NotesDoc } from '../data/model.ts';
-import { backoffDelay, ReconnectRequiredError, SYNC, SyncEngine, TransientError, type Timers, type Transport } from './engine.ts';
+import { backoffDelay, ConflictError, ReconnectRequiredError, SYNC, SyncEngine, TransientError, type Timers, type Transport } from './engine.ts';
 import { applyChanges, mergeDocs, migratePrefs, normalizeDoc, type Change } from './merge.ts';
 import { outbox, type OutboxLike } from './outbox.ts';
 
@@ -270,6 +270,24 @@ describe('sync engine', () => {
     await s.timers.advance(120_000);
     expect(pull).toHaveBeenCalledTimes(1);
     expect(s.box.items.size).toBe(1);
+  });
+
+  it('re-runs read-merge-write immediately when the remote changed between pull and push', async () => {
+    let first = true;
+    const s = setup();
+    const push = vi.fn(async () => {
+      if (first) {
+        first = false;
+        throw new ConflictError('moved');
+      }
+      return { rev: 'r3' };
+    });
+    (s.t as unknown as { push: typeof push }).push = push;
+    s.edit(note('a', 1));
+    await s.engine.flush();
+    await flushPromises();
+    expect(push).toHaveBeenCalledTimes(2);
+    expect(s.statuses.at(-1)).toBe('synced');
   });
 
   it('pulls on focus only when stale', async () => {
