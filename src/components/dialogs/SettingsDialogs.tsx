@@ -13,7 +13,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Radio from '@mui/material/Radio';
 import Stack from '@mui/material/Stack';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -24,6 +23,8 @@ import { useColorScheme, useTheme } from '@mui/material/styles';
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
 import DarkModeOutlined from '@mui/icons-material/DarkModeOutlined';
 import LightModeOutlined from '@mui/icons-material/LightModeOutlined';
+import RadioButtonCheckedOutlined from '@mui/icons-material/RadioButtonCheckedOutlined';
+import RadioButtonUncheckedOutlined from '@mui/icons-material/RadioButtonUncheckedOutlined';
 import SettingsBrightnessOutlined from '@mui/icons-material/SettingsBrightnessOutlined';
 import { useRef, useState, type ReactNode } from 'react';
 import { connectService, refreshMe } from '../../app/session.ts';
@@ -107,8 +108,8 @@ export function SettingsDialog() {
               const on = connected.includes(s.id);
               const Panel = s.settingsPanel;
               return (
-                <Box key={s.id} data-testid={`service-${s.id}`}>
-                  <ListItem disableGutters secondaryAction={
+                <Box component="li" key={s.id} data-testid={`service-${s.id}`} sx={{ listStyle: 'none' }}>
+                  <ListItem component="div" disableGutters secondaryAction={
                     s.required ? <Chip size="small" label={on ? 'Connected' : 'Not connected'} color={on ? 'default' : 'warning'} />
                       : on ? <Button size="small" onClick={() => void disconnect(s.id)}>Disconnect</Button>
                       : <Button size="small" variant="contained" onClick={() => void connectService(s.id)} data-testid={`connect-${s.id}`}>Connect</Button>
@@ -174,7 +175,7 @@ export function FontDialog() {
         <List role="radiogroup" aria-label="Font">
           {FONTS.map((f) => (
             <ListItemButton key={f.id} role="radio" aria-checked={choice === f.id} selected={choice === f.id} onClick={() => pick(f.id)} data-testid={`font-${f.id}`}>
-              <ListItemIcon><Radio checked={choice === f.id} tabIndex={-1} disableRipple slotProps={{ input: { 'aria-hidden': true } }} /></ListItemIcon>
+              <ListItemIcon aria-hidden>{choice === f.id ? <RadioButtonCheckedOutlined color="primary" /> : <RadioButtonUncheckedOutlined />}</ListItemIcon>
               <ListItemText primary={f.label} secondary="The quick brown fox jumps over the lazy dog" slotProps={{ primary: { sx: { fontFamily: f.stack } }, secondary: { sx: { fontFamily: f.stack } } }} />
             </ListItemButton>
           ))}

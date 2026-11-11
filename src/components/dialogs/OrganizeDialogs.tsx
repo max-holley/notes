@@ -170,7 +170,7 @@ export function TagManagerDialog() {
               )}
             </ListItem>
           ))}
-          {!names.length && <Typography color="text.secondary" sx={{ p: 1 }}>No tags yet.</Typography>}
+          {!names.length && <ListItem disableGutters><ListItemText secondary="No tags yet." /></ListItem>}
         </List>
       </DialogContent>
       <DialogActions><Button variant="contained" onClick={() => set({ dialog: null })}>Done</Button></DialogActions>
@@ -183,7 +183,7 @@ export function StatsDialog() {
   const set = useUi((s) => s.set);
   const doc = useNotes((s) => s.doc);
   const s = stats(doc);
-  const rows: [string, number][] = [['Notes', s.notes], ['Pinned', s.pinned], ['Archived', s.archived], ['Categories', s.categories], ['Tags', s.tags], ['Words', s.words], ['Recently deleted', s.trashed]];
+  const rows: [string, number][] = [['Active notes', s.notes], ['Pinned', s.pinned], ['Archived', s.archived], ['Categories', s.categories], ['Tags', s.tags], ['Words', s.words], ['Recently deleted', s.trashed]];
   return (
     <Dialog open={open} onClose={() => set({ dialog: null })} fullWidth maxWidth="xs" aria-labelledby="stats-title">
       <DialogTitle id="stats-title">Stats</DialogTitle>

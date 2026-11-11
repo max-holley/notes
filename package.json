@@ -16,7 +16,8 @@
     "new:service": "node scripts/new-service.mjs",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "serve:mock": "node scripts/serve-mock.mjs",
-    "deploy": "vite build && wrangler d1 migrations apply DB --remote && wrangler deploy"
+    "deploy": "vite build && wrangler d1 migrations apply DB --remote && wrangler deploy",
+    "screenshots": "playwright test --config playwright.screenshots.config.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

@@ -144,11 +144,11 @@ function MeetingNoteDialog() {
       <DialogContent sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         <DateCalendar value={dayjs(day)} onChange={(d) => d && setDay(startOfDay(d.toDate()))} />
         <Box sx={{ flex: 1, minWidth: 260 }}>
-          <ListSubheader disableSticky sx={{ bgcolor: 'transparent', px: 0 }}>{day.toLocaleDateString(undefined, { dateStyle: 'full' })}</ListSubheader>
+          <ListSubheader component="h3" disableSticky sx={{ bgcolor: 'transparent', px: 0 }}>{day.toLocaleDateString(undefined, { dateStyle: 'full' })}</ListSubheader>
           {!events && <Skeleton height={40} />}
           {events && !events.length && <Typography variant="body2" color="text.secondary">No events.</Typography>}
           {events && <EventList events={events} />}
-          <ListSubheader disableSticky sx={{ bgcolor: 'transparent', px: 0, mt: 2 }}>Next 7 days</ListSubheader>
+          <ListSubheader component="h3" disableSticky sx={{ bgcolor: 'transparent', px: 0, mt: 2 }}>Next 7 days</ListSubheader>
           {upcoming.events?.map((e) => (
             <ListItemButton key={e.id} onClick={() => createMeetingNote(e)} sx={{ borderRadius: 2 }} data-testid="upcoming-event">
               <ListItemText primary={e.summary ?? '(No title)'} secondary={`${new Date(e.start.dateTime ?? e.start.date!).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })} · ${timeOf(e)}`} />

@@ -1,4 +1,5 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import { brand } from '../src/brand/brand.config.ts';
 import { control, editor, newNote, signIn, tb } from './helpers.ts';
 
 interface MockTask { id: string; title: string; status: string; due?: string; deleted?: boolean; notes?: string }
@@ -25,7 +26,7 @@ test('task line lifecycle: create, complete, rename (both ways), due date, delet
   // Create → Google Task in the dedicated list with a deep link back to the note.
   await expect.poll(async () => (await remoteTasks(request, email)).map((t) => t.title), { timeout: 15_000 }).toContain('Buy milk');
   const lists = (await (await request.get(`/__mock/control/tasks?email=${encodeURIComponent(email)}`)).json()) as { title: string }[];
-  expect(lists.map((l) => l.title)).toContain('Notes');
+  expect(lists.map((l) => l.title)).toContain(brand.appName);
   const [task] = await remoteTasks(request, email);
   expect(task!.notes).toMatch(/\/app\?note=/);
   await expect(editor(page).locator(`li[data-task-id="${task!.id}"]`)).toHaveCount(1);

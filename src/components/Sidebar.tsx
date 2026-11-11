@@ -117,7 +117,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           <EditOutlined sx={{ mr: 1 }} /> New note
         </Fab>
       </Box>
-      <List dense sx={{ px: 1 }}>
+      <List component="div" dense sx={{ px: 1 }}>
         <ListItemButton selected={ui.view === 'notes' && !ui.filterCategory && !ui.filterTags.length} onClick={() => go({ view: 'notes', filterCategory: null, filterTags: [] })}>
           <ListItemIcon><NotesOutlined /></ListItemIcon>
           <ListItemText primary="All notes" />
@@ -158,7 +158,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           </>
         }
       >
-        <List dense disablePadding>
+        <List component="div" dense disablePadding>
           {cats.map((c) => (
             <CategoryItem
               key={c.id}

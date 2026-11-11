@@ -4,7 +4,6 @@ import Chip from '@mui/material/Chip';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
-import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -51,24 +50,27 @@ function useListTimeout() {
 
 const NoteCard = memo(function NoteCard({ n, selected, catName, catColor, onMenu }: { n: Note; selected: boolean; catName: string; catColor?: string; onMenu(e: React.MouseEvent<HTMLElement>, n: Note): void }) {
   const openNote = useUi((s) => s.openNote);
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: `note:${n.id}` });
+  // Drag (pointer only) is on the non-interactive wrapper; the card button and pin button are siblings (no nesting).
+  const { listeners, setNodeRef, isDragging } = useDraggable({ id: `note:${n.id}` });
   const preview = noteText(n).slice(0, 120);
   return (
-    <ListItemButton
+    <Box
       ref={setNodeRef}
       {...listeners}
-      {...attributes}
-      role="option"
-      aria-selected={selected}
-      selected={selected}
-      onClick={() => openNote(n.id)}
-      onContextMenu={(e) => {
+      role="listitem"
+      data-testid="note-card"
+      data-note-id={n.id}
+      onContextMenu={(e: React.MouseEvent<HTMLElement>) => {
         e.preventDefault();
         onMenu(e, n);
       }}
-      data-testid="note-card"
-      data-note-id={n.id}
-      sx={{ borderRadius: 3, alignItems: 'flex-start', mb: 0.5, py: 1.25, opacity: isDragging ? 0.5 : n.archived ? 0.6 : 1, '&:hover .pin-btn, &:focus-within .pin-btn': { opacity: 1 } }}
+      sx={{ position: 'relative', mb: 0.5, opacity: isDragging ? 0.5 : n.archived ? 0.6 : 1, '&:hover .pin-btn, &:focus-within .pin-btn': { opacity: 1 } }}
+    >
+    <ListItemButton
+      selected={selected}
+      aria-current={selected ? 'true' : undefined}
+      onClick={() => openNote(n.id)}
+      sx={{ borderRadius: 3, alignItems: 'flex-start', py: 1.25, pr: 6 }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Stack direction="row" spacing={1} sx={{ alignItems: 'baseline' }}>
@@ -94,6 +96,7 @@ const NoteCard = memo(function NoteCard({ n, selected, catName, catColor, onMenu
           ))}
         </Stack>
       </Box>
+    </ListItemButton>
       <Tooltip title={n.pinned ? 'Unpin' : 'Pin'}>
         <IconButton
           className="pin-btn"
@@ -105,12 +108,12 @@ const NoteCard = memo(function NoteCard({ n, selected, catName, catColor, onMenu
             togglePin(n.id);
           }}
           onPointerDown={(e) => e.stopPropagation()}
-          sx={{ ml: 0.5, opacity: n.pinned ? 1 : 0, color: n.pinned ? 'primary.main' : undefined }}
+          sx={{ position: 'absolute', right: 8, top: 8, opacity: n.pinned ? 1 : 0, color: n.pinned ? 'primary.main' : undefined }}
         >
           <PushPinOutlined fontSize="small" />
         </IconButton>
       </Tooltip>
-    </ListItemButton>
+    </Box>
   );
 });
 
@@ -140,7 +143,7 @@ export function NotesList() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ids]);
 
-  const title = ui.filterCategory === 'uncategorized' ? 'Other' : ui.filterCategory ? doc.categories[ui.filterCategory]?.name ?? 'Notes' : 'All notes';
+  const title = ui.filterCategory === 'uncategorized' ? 'Other' : ui.filterCategory ? doc.categories[ui.filterCategory]?.name ?? 'All notes' : 'All notes';
   const card = (n: Note) => {
     const c = n.categoryId ? doc.categories[n.categoryId] : undefined;
     return (
@@ -202,18 +205,16 @@ export function NotesList() {
             {!ui.search && <Button sx={{ mt: 1 }} onClick={() => newNote()}>Create a note</Button>}
           </Box>
         )}
-        <List role="listbox" aria-label="Notes" disablePadding subheader={<li />}>
+        <Box component="section" aria-label="Note list">
           {pinned.length > 0 && (
-            <li>
-              <ListSubheader sx={{ bgcolor: 'transparent', position: 'static', lineHeight: 2.5 }}>Pinned</ListSubheader>
-              <TransitionGroup component={null}>{pinned.map(card)}</TransitionGroup>
-            </li>
+            <>
+              <ListSubheader component="h3" sx={{ bgcolor: 'transparent', position: 'static', lineHeight: 2.5 }}>Pinned</ListSubheader>
+              <Box role="list" aria-label="Pinned notes"><TransitionGroup component={null}>{pinned.map(card)}</TransitionGroup></Box>
+            </>
           )}
-          <li>
-            {pinned.length > 0 && others.length > 0 && <ListSubheader sx={{ bgcolor: 'transparent', position: 'static', lineHeight: 2.5 }}>Notes</ListSubheader>}
-            <TransitionGroup component={null}>{others.map(card)}</TransitionGroup>
-          </li>
-        </List>
+          {pinned.length > 0 && others.length > 0 && <ListSubheader component="h3" sx={{ bgcolor: 'transparent', position: 'static', lineHeight: 2.5 }}>Other notes</ListSubheader>}
+          <Box role="list" aria-label="Notes in this view"><TransitionGroup component={null}>{others.map(card)}</TransitionGroup></Box>
+        </Box>
       </Box>
       <Menu anchorEl={menu?.el} open={!!menu} onClose={() => setMenu(null)}>
         <MenuItem onClick={() => { togglePin(menu!.n.id); setMenu(null); }}>

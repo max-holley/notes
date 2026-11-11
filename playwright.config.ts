@@ -21,7 +21,7 @@ export default defineConfig({
   webServer: {
     command: 'node scripts/serve-mock.mjs',
     url: `http://localhost:${PORT}/api/config`,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 180_000,
     env: { PORT: String(PORT) },
   },

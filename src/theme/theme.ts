@@ -80,7 +80,15 @@ export function createAppTheme(seed: string): Theme {
         styleOverrides: { root: { borderRadius: SHAPE.full, paddingInline: 24, minHeight: 40 } },
       },
       MuiIconButton: { styleOverrides: { root: { borderRadius: SHAPE.full } } },
-      MuiToggleButton: { styleOverrides: { root: { textTransform: 'none' } } },
+      MuiToggleButton: {
+        styleOverrides: {
+          root: ({ theme: t }) => ({
+            textTransform: 'none',
+            color: t.vars!.palette.m3.onSurfaceVariant,
+            '&.Mui-selected, &.Mui-selected:hover': { backgroundColor: t.vars!.palette.m3.secondaryContainer, color: t.vars!.palette.m3.onSecondaryContainer },
+          }),
+        },
+      },
       MuiFab: {
         styleOverrides: {
           root: ({ theme: t }) => ({

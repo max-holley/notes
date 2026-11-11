@@ -95,7 +95,7 @@ export default function Workspace() {
   const connected = ui.me?.services ?? [];
   const navs = navDestinations(services, connected);
   const destinations = [
-    { id: 'notes', label: 'Notes', icon: <NotesOutlined /> },
+    { id: 'notes', label: 'All notes', icon: <NotesOutlined /> },
     ...navs.map((d) => ({ id: d.id, label: d.label, icon: <d.icon /> })),
     { id: 'trash', label: 'Deleted', icon: <DeleteOutlined /> },
   ];
