@@ -70,7 +70,7 @@ const NoteCard = memo(function NoteCard({ n, selected, catName, catColor, onMenu
       selected={selected}
       aria-current={selected ? 'true' : undefined}
       onClick={() => openNote(n.id)}
-      sx={{ borderRadius: 3, alignItems: 'flex-start', py: 1.25, pr: 6 }}
+      sx={{ borderRadius: 1, alignItems: 'flex-start', py: 1.25, pr: 6 }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Stack direction="row" spacing={1} sx={{ alignItems: 'baseline' }}>
@@ -84,7 +84,7 @@ const NoteCard = memo(function NoteCard({ n, selected, catName, catColor, onMenu
         <Typography variant="body2" color="text.secondary" sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
           {preview || 'No content'}
         </Typography>
-        <Stack direction="row" spacing={0.5} sx={{ mt: 0.5, flexWrap: 'wrap', alignItems: 'center', rowGap: 0.5 }}>
+        <Stack direction="row" sx={{ mt: 0.5, flexWrap: 'wrap', alignItems: 'center', columnGap: 1, rowGap: 0.5 }}>
           <Typography variant="overline" sx={{ color: catColor ?? 'text.secondary' }}>
             {catName}
           </Typography>

@@ -96,7 +96,7 @@ function EventList({ events, dense }: { events: CalendarEvent[]; dense?: boolean
             </Tooltip>
           }
         >
-          <ListItemButton onClick={() => createMeetingNote(e)} sx={{ borderRadius: 2, pr: 6 }}>
+          <ListItemButton onClick={() => createMeetingNote(e)} sx={{ borderRadius: 1, pr: 6 }}>
             <ListItemText primary={e.summary ?? '(No title)'} secondary={timeOf(e)} slotProps={{ primary: { noWrap: true, variant: 'body2' } }} />
           </ListItemButton>
         </ListItem>
@@ -150,7 +150,7 @@ function MeetingNoteDialog() {
           {events && <EventList events={events} />}
           <ListSubheader component="h3" disableSticky sx={{ bgcolor: 'transparent', px: 0, mt: 2 }}>Next 7 days</ListSubheader>
           {upcoming.events?.map((e) => (
-            <ListItemButton key={e.id} onClick={() => createMeetingNote(e)} sx={{ borderRadius: 2 }} data-testid="upcoming-event">
+            <ListItemButton key={e.id} onClick={() => createMeetingNote(e)} sx={{ borderRadius: 1 }} data-testid="upcoming-event">
               <ListItemText primary={e.summary ?? '(No title)'} secondary={`${new Date(e.start.dateTime ?? e.start.date!).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })} · ${timeOf(e)}`} />
             </ListItemButton>
           ))}
