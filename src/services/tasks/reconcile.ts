@@ -42,7 +42,8 @@ export function planReconcile(input: {
   const byTask = new Map<string, TaskLine>();
   for (const l of lines) if (l.taskId && !byTask.has(l.taskId)) byTask.set(l.taskId, l);
 
-  for (const l of lines) if (!l.taskId) actions.push({ type: 'create', line: l });
+  // Empty lines (e.g. a fresh Actions item in a meeting note) become tasks once they have text.
+  for (const l of lines) if (!l.taskId && l.title.trim()) actions.push({ type: 'create', line: l });
 
   for (const [taskId, line] of byTask) {
     const link = links[taskId];
