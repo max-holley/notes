@@ -19,7 +19,7 @@ export interface BrandConfig {
 
 export const brand: BrandConfig = {
   appName: 'Notes',
-  description: 'Notes stored in your own Google Drive, with Google Tasks and Calendar built in.',
+  description: 'Write, organise and find everything in one place, with Google Tasks and Calendar built in.',
   themeColor: '#ffffff',
   contactUrl: 'https://github.com/max-holley/notes',
 };

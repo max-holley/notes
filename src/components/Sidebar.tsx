@@ -35,7 +35,7 @@ import { useUi } from '../store/ui.ts';
 function Section({
   id, title, count, expanded, onToggle, active, actions, children,
 }: {
-  id: string; title: string; count: number; expanded: boolean; onToggle(v: boolean): void; active?: string | null; actions: ReactNode; children: ReactNode;
+  id: string; title: string; count?: number; expanded: boolean; onToggle(v: boolean): void; active?: string | null; actions: ReactNode; children: ReactNode;
 }) {
   return (
     <Accordion expanded={expanded} onChange={(_, v) => onToggle(v)} slotProps={{ transition: { unmountOnExit: false } }} data-testid={`sidebar-${id}`}>
@@ -49,9 +49,11 @@ function Section({
           <Typography variant="subtitle2" component="h2">
             {title}
           </Typography>
-          <Typography variant="caption" color="text.secondary" aria-label={`${count} items`}>
-            {count}
-          </Typography>
+          {count !== undefined && (
+            <Typography variant="caption" color="text.secondary" aria-label={`${count} items`}>
+              {count}
+            </Typography>
+          )}
           {!expanded && active && <Chip size="small" label={active} color="secondary" sx={{ maxWidth: 120 }} data-testid={`${id}-active-filter`} />}
         </AccordionSummary>
         {actions}
@@ -215,7 +217,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </Section>
 
       {panels.map((p) => (
-        <Section key={p.id} id={p.id} title={p.label} count={0} expanded={sb.today} onToggle={toggle('today')} actions={null}>
+        <Section key={p.id} id={p.id} title={p.label} expanded={sb.today} onToggle={toggle('today')} actions={null}>
           <p.component />
         </Section>
       ))}
@@ -226,10 +228,10 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           variant="caption"
           color="text.secondary"
           onClick={() => ui.set({ dialog: 'stats' })}
-          sx={{ background: 'none', border: 0, cursor: 'pointer', p: 0, font: 'inherit', textAlign: 'left' }}
+          sx={{ background: 'none', border: 0, cursor: 'pointer', p: 0, textAlign: 'left' }}
           data-testid="stats-link"
         >
-          {st.notes} notes · {st.categories} categories · {st.tags} tags
+          {st.notes} {st.notes === 1 ? 'note' : 'notes'} · {st.categories} {st.categories === 1 ? 'category' : 'categories'} · {st.tags} {st.tags === 1 ? 'tag' : 'tags'}
         </Typography>
       </Box>
 

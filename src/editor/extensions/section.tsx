@@ -54,8 +54,6 @@ function SectionView({ node, updateAttributes, editor }: ReactNodeViewProps) {
           borderRadius: 3,
           bgcolor: `sections.${type}.container`,
           color: `sections.${type}.onContainer`,
-          borderLeft: 4,
-          borderColor: `sections.${type}.main`,
         }}
       >
         <Box contentEditable={false} sx={{ flexShrink: 0 }}>
