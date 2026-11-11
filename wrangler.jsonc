@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "notes",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-08-15",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "notes",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // Non-secret config. GOOGLE_CLIENT_SECRET and TOKEN_ENC_KEY are set with `wrangler secret put`.
+  "vars": {
+    "MOCK_GOOGLE": "0",
+    "GOOGLE_CLIENT_ID": ""
+  }
+}

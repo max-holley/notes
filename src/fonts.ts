@@ -1,0 +1,21 @@
+// Self-hosted fonts (@fontsource). Only @font-face rules are added; files load when a font is used.
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/700.css';
+import '@fontsource/open-sans/400.css';
+import '@fontsource/open-sans/600.css';
+import '@fontsource/lato/400.css';
+import '@fontsource/lato/700.css';
+import '@fontsource/noto-sans/400.css';
+import '@fontsource/noto-sans/500.css';
+import '@fontsource/source-sans-3/400.css';
+import '@fontsource/source-sans-3/600.css';
+import '@fontsource/roboto-serif/400.css';
+import '@fontsource/roboto-serif/500.css';
+import '@fontsource/merriweather/400.css';
+import '@fontsource/merriweather/700.css';
+import '@fontsource/roboto-mono/400.css';
+import '@fontsource/roboto-mono/500.css';

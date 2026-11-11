@@ -1,45 +1,106 @@
-# Notes
+# Notes app (rebuild)
 
-A local-first notes workspace. Open `index.html` or serve this directory with any static web server. Existing notes, categories, appearance preferences, and backup folders use the same storage keys as before.
+A notes app that stores everything in the user's own Google Drive, with Google Tasks and Google
+Calendar built in. It is a React 19 + MUI v7 (Material Design 3) single-page app, served by one
+Cloudflare Worker that also handles accounts.
 
-For a local preview:
+The product is **unbranded** by default. The name shown everywhere comes from
+`src/brand/brand.config.ts`, and logos/icons are optional files in `public/brand/` (see
+[docs/BRANDING.md](docs/BRANDING.md)).
 
-```sh
-python -m http.server 4173 --bind 127.0.0.1
+## What runs where
+
+| Piece | Where | Stores |
+|---|---|---|
+| Frontend (Vite + React + MUI + Tiptap) | Static assets on the Worker | IndexedDB: an outbox of unsynced edits plus the session working copy, wiped on sign-out. localStorage: theme, font, accent and a "signed in before" hint. |
+| API (`worker/`, Hono) | Cloudflare Worker, same origin | D1: users, encrypted Google refresh tokens + granted scopes, device sessions. **No note data.** |
+| Notes, images, Docs | The user's Google Drive (`Notes/` folder, `drive.file` scope) | `notes-file.json`, `images/*`, exported Google Docs |
+| Tasks / events | Google Tasks / Google Calendar (called directly from the browser) | Task lines ↔ tasks link map lives in the Drive file |
+
+Sign-in is OAuth 2.0 authorization code + PKCE, run by the Worker. The browser asks the Worker
+for short-lived access tokens (`/api/token`) and calls Google APIs itself. Google services are
+pluggable modules: see [docs/ADDING_A_GOOGLE_SERVICE.md](docs/ADDING_A_GOOGLE_SERVICE.md).
+
+## Develop (no Google account needed)
+
+Requirements: Node 22+ and pnpm 10.
+
+```bash
+pnpm install
+pnpm exec playwright install chromium
+pnpm serve:mock
 ```
 
-Then visit http://127.0.0.1:4173. Browser data belongs to its original origin; notes on the deployed site will not automatically appear in a localhost preview. Use Export and Import to transfer them.
+`pnpm serve:mock` builds the app, applies D1 migrations to a throw-away local database and starts
+`wrangler dev` on http://localhost:8787 with `MOCK_GOOGLE=1`. In mock mode the Worker serves an
+in-repo fake Google: an OAuth consent page where you can untick scopes, plus fake Drive v3,
+Tasks v1 and Calendar v3 APIs under `/__mock/`. For hot reload of the UI, run `pnpm dev` (Vite on
+:5173 proxies `/api` and `/__mock` to :8787) next to `pnpm serve:mock`.
 
-## Design
+## Quality gates
 
-`design.css` defines the neutral light/dark palette, aligned three-column workspace, responsive layouts, focus styles, and reduced-motion support. `icon.svg` is the master artwork for the in-app mark, favicon, touch icon, and install icons. The legacy PNG filenames contain the same new artwork.
+| Command | What it does |
+|---|---|
+| `pnpm verify` | Runs everything below in order. Exits non-zero on any failure. |
+| `pnpm typecheck` | `tsc -b`, strict, for app, Worker and tooling |
+| `pnpm lint` | ESLint plus the style audit (no raw hex colours or px font sizes outside `src/theme/`) |
+| `pnpm test` | Vitest: unit tests (jsdom) and Worker tests (`@cloudflare/vitest-pool-workers` with D1) |
+| `pnpm e2e` | Playwright against `wrangler dev` in mock Google mode, including axe accessibility checks |
+| `pnpm audit:brand` | Checks that no logo, icon or app-name strings exist outside the brand config, and that the app builds with an empty `public/brand/` |
+| `pnpm screenshots` | Captures every screen and dialog in light/dark and compact/expanded into `screenshots/` |
+| `pnpm new:service <id>` | Scaffolds a new Google service module |
 
-## Structured editing
+CI (`.github/workflows/ci.yml`) runs `pnpm verify`.
 
-- Press Enter on the final empty line to leave a panel or quotation.
-- Press Ctrl/Cmd+Enter to move below a panel, quotation, code block, or table.
-- Arrow Up/Down at a structured block's start/end moves outside it.
-- Enter splits checklist text at the caret; an empty item exits the checklist.
-- Tab/Shift+Tab moves between table cells; Tab in the last cell adds a row.
-- Backspace at the start of a panel unwraps its contents. At the start of a checklist item it converts that item to a paragraph.
-- Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z undo/redo text and structured edits. Ctrl+Y also redoes.
-- Escape dismisses menus, dialogs, and the tablet sidebar.
+## Manual setup for production
 
-`editor-behavior.js` handles these interactions and a bounded, in-memory edit history. Saving is separate and continues to use IndexedDB.
+None of this is needed for development or tests.
 
-## Browser regression checks
+1. **Google Cloud project.** No billing is needed. Enable the **Google Drive API**, **Google Tasks API** and **Google Calendar API**.
+2. **OAuth consent screen.**
+   - Choose **Internal** if only one Google Workspace organisation will use the app.
+   - Otherwise choose **External**. The Tasks and Calendar scopes then need Google verification. While the app is in *Testing*, refresh tokens expire after 7 days, and users will see the in-app *Reconnect Google* prompt.
+   - Add the scopes: `openid`, `email`, `profile`, `…/auth/drive.file`, `…/auth/tasks`, `…/auth/calendar.events.readonly`.
+3. **OAuth client.** Create a *Web application* client with these authorised redirect URIs:
+   - `http://localhost:8787/api/auth/callback`
+   - `https://<your-domain>/api/auth/callback`
+4. **Cloudflare.**
+   - Create the database, then put the printed `database_id` into `wrangler.jsonc`:
+     ```bash
+     pnpm exec wrangler d1 create notes
+     ```
+   - Apply the migrations:
+     ```bash
+     pnpm exec wrangler d1 migrations apply DB --remote
+     ```
+   - Set `GOOGLE_CLIENT_ID` under `vars` in `wrangler.jsonc` (it isn't secret).
+   - Add the client secret:
+     ```bash
+     pnpm exec wrangler secret put GOOGLE_CLIENT_SECRET
+     ```
+   - Add the token encryption key. Give it 32 random bytes in base64 with a version prefix. To rotate it later, put the new key first and keep the old one after it (`v2:<new>,v1:<old>`); stored tokens are re-encrypted with the new key when they're next used.
+     ```bash
+     node -e "console.log('v1:'+require('crypto').randomBytes(32).toString('base64'))" | pnpm exec wrangler secret put TOKEN_ENC_KEY
+     ```
+   - Make sure `MOCK_GOOGLE` is `"0"` in production. It is by default in `wrangler.jsonc`.
+5. **Deploy.** Run `pnpm deploy` (build, remote migrations, then `wrangler deploy`). Add a custom domain in the Cloudflare dashboard. The old GitHub Pages `CNAME` has been removed.
+6. **Branding.** Follow [docs/BRANDING.md](docs/BRANDING.md).
 
-Install Playwright in your development environment and make Microsoft Edge available, then run:
+## Project layout
 
-```sh
-node tests/editor.cjs
+```
+src/            React app
+  brand/        brand config + build helpers (the only place the product name lives)
+  theme/        M3 theme, tokens, seed-colour palettes
+  services/     Google service registry + drive / tasks / calendar modules
+  sync/         merge, outbox (IndexedDB), sync engine
+  editor/       Tiptap editor, custom extensions, adaptive toolbar
+worker/         Hono Worker: auth, sessions, token minting, mock Google (worker/mock)
+migrations/     D1 schema
+e2e/            Playwright specs (mock Google)
+scripts/        verify, audits, scaffolding, mock server
+docs/           branding, adding services, legacy behaviour spec
 ```
 
-The suite uses an isolated browser profile and temporary local HTTP server. It checks editing, undo/redo, persistence, data tools, keyboard exits, and desktop/tablet/mobile layouts. Screenshot fixtures are generated in ignored `test-results/`; illustrative notes are confined to the test browser. The backup payload test uses a mock directory handle and does not request access to a real folder. Real device keyboard behaviour and browser-specific file-picker permissions still require device testing.
-
-## Markdown export / import
-
-**Export** asks for a format: JSON (all notes and categories) or Markdown (the open note, or every note if none is open, one `.md` file each). **Import** accepts `.json` and `.md` files together and detects the type per file; each Markdown file becomes a new note (a leading `# Title` becomes the note title). Markdown supports headings, bold/italic/strike, code, links, lists, checklists (`- [ ]`), tables, quotes, and panels (as `> [!INFO]`-style alerts).
-
-
-*
+The privacy policy is served at `/privacy`. It states exactly what the backend stores; see
+`src/views/privacyText.ts`, which must stay in sync with `migrations/`.

@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"],
+    "tsBuildInfoFile": "node_modules/.tmp/node.tsbuildinfo"
+  },
+  "include": ["vite.config.ts", "vite.brand-plugin.ts", "vitest.config.ts", "playwright.config.ts", "playwright.screenshots.config.ts", "e2e", "src/brand/build.ts", "src/brand/brand.config.ts"]
+}
