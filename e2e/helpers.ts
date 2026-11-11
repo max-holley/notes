@@ -89,3 +89,11 @@ export function collectErrors(page: Page) {
   page.on('pageerror', (e) => errors.push(e.message));
   return errors;
 }
+
+/** Click a toolbar control, via the overflow ("more") menu when it doesn't fit. */
+export async function tb(page: Page, id: string) {
+  const direct = page.getByTestId(`tb-${id}`);
+  if (await direct.isVisible()) return direct.click();
+  await page.getByTestId('tb-more').click();
+  await page.getByTestId(`tbm-${id}`).click();
+}

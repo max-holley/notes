@@ -40,7 +40,7 @@ export const tokenCache = new Map<string, { token: string; exp: number; scopes: 
 
 /** Fixed-window rate limiter per client IP and route bucket. */
 const rateBuckets = new Map<string, { start: number; count: number }>();
-export const RATE_LIMIT = { windowMs: 60_000, max: 30 };
+export const RATE_LIMIT = { windowMs: 60_000, max: 30, mockMax: 10_000 };
 export function resetRateLimits() { rateBuckets.clear(); }
 
 const rateLimit = (bucket: string): MiddlewareHandler => async (c, next) => {
@@ -49,7 +49,8 @@ const rateLimit = (bucket: string): MiddlewareHandler => async (c, next) => {
   const now = Date.now();
   const b = rateBuckets.get(key);
   if (!b || now - b.start > RATE_LIMIT.windowMs) rateBuckets.set(key, { start: now, count: 1 });
-  else if (++b.count > RATE_LIMIT.max) return c.json({ error: 'rate_limited' }, 429, { 'Retry-After': '60' });
+  // Mock mode (dev/e2e) gets a high ceiling unless a test opts into the real limit.
+  else if (++b.count > (isMock(c.env as Env) && !c.req.header('X-Test-Rate-Limit') ? RATE_LIMIT.mockMax : RATE_LIMIT.max)) return c.json({ error: 'rate_limited' }, 429, { 'Retry-After': '60' });
   await next();
 };
 

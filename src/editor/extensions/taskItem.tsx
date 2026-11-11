@@ -91,14 +91,7 @@ function TaskItemView({ node, updateAttributes, editor }: ReactNodeViewProps) {
   const checked = !!node.attrs.checked;
   const isTask = !!node.attrs.taskLine;
   return (
-    <NodeViewWrapper
-      as="li"
-      data-type="taskItem"
-      data-checked={checked}
-      data-line-id={node.attrs.lineId ?? undefined}
-      data-task-line={isTask ? 'true' : undefined}
-      style={{ display: 'flex', alignItems: 'flex-start' }}
-    >
+    <NodeViewWrapper as="div" style={{ display: 'flex', alignItems: 'flex-start' }}>
       <Box component="label" contentEditable={false} sx={{ flexShrink: 0, mt: -0.75, ml: -1 }}>
         <Checkbox
           size="small"
@@ -150,7 +143,16 @@ export const NotesTaskItem = TaskItem.extend({
     };
   },
   addNodeView() {
-    return ReactNodeViewRenderer(TaskItemView);
+    // The outer <li> carries the data attributes (selectors, Tasks view scroll target).
+    return ReactNodeViewRenderer(TaskItemView, {
+      as: 'li',
+      attrs: ({ node }) => ({
+        'data-type': 'taskItem',
+        'data-checked': String(!!node.attrs.checked),
+        ...(node.attrs.lineId ? { 'data-line-id': node.attrs.lineId as string } : {}),
+        ...(node.attrs.taskLine ? { 'data-task-line': 'true' } : {}),
+      }),
+    });
   },
   addCommands() {
     return {

@@ -123,7 +123,7 @@ export function NoteEditor({ noteId, compact }: { noteId: string; compact: boole
       },
       handleClick: (_view, _pos, event) => {
         const a = (event.target as HTMLElement).closest('a');
-        if (!a) return false;
+        if (!a || event.button !== 0) return false;
         const href = a.getAttribute('href') ?? '';
         if (event.ctrlKey || event.metaKey) {
           window.open(href, '_blank', 'noopener,noreferrer');
@@ -141,6 +141,7 @@ export function NoteEditor({ noteId, compact }: { noteId: string; compact: boole
           // unless Ctrl/Shift is held (table row/column menu).
           if (a && !event.ctrlKey && !event.shiftKey) {
             event.preventDefault();
+            editorRef.current?.commands.setTextSelection(view.posAtDOM(a, 0) + 1);
             setLink({ mode: 'menu', x: event.clientX, y: event.clientY, href: a.getAttribute('href') ?? '', text: a.textContent ?? '' });
             return true;
           }

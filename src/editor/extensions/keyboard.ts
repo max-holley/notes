@@ -111,6 +111,20 @@ function shiftTabOutOfTable(editor: Editor): boolean {
   return false;
 }
 
+/** ArrowRight at the end of inline code at the end of a line steps out of the code mark. */
+function exitInlineCode(editor: Editor): boolean {
+  const { state, view } = editor;
+  const { $from, empty } = state.selection;
+  const code = state.schema.marks.code;
+  if (!empty || !code || $from.parentOffset !== $from.parent.content.size) return false;
+  const marks = state.storedMarks ?? $from.marks();
+  const before = $from.nodeBefore?.marks ?? [];
+  if (!code.isInSet(marks) && !code.isInSet(before)) return false;
+  if (state.storedMarks && !code.isInSet(state.storedMarks)) return false; // already stepped out
+  view.dispatch(state.tr.setStoredMarks(before.filter((m) => m.type !== code)));
+  return true;
+}
+
 export const KeyboardBehaviours = Extension.create({
   name: 'keyboardBehaviours',
   priority: 1000,
@@ -119,6 +133,7 @@ export const KeyboardBehaviours = Extension.create({
       Enter: ({ editor }) => exitOnEmptyLastLine(editor) || liftItem(editor, true),
       'Mod-Enter': ({ editor }) => ctrlEnter(editor),
       ArrowDown: ({ editor }) => arrowOut(editor, 'down'),
+      ArrowRight: ({ editor }) => exitInlineCode(editor),
       ArrowUp: ({ editor }) => arrowOut(editor, 'up'),
       Backspace: ({ editor }) => unwrapSectionAtStart(editor) || liftItem(editor, false),
       'Shift-Tab': ({ editor }) => (editor.isActive('table') && !editor.can().goToPreviousCell() ? shiftTabOutOfTable(editor) : false),

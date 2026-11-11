@@ -176,9 +176,9 @@ describe('encryption', () => {
 describe('rate limiting', () => {
   it('limits auth routes per client', async () => {
     let last = 0;
-    for (let i = 0; i <= RATE_LIMIT.max; i++) last = (await req('/api/auth/start', { headers: { 'CF-Connecting-IP': '1.2.3.4' } })).status;
+    for (let i = 0; i <= RATE_LIMIT.max; i++) last = (await req('/api/auth/start', { headers: { 'CF-Connecting-IP': '1.2.3.4', 'X-Test-Rate-Limit': '1' } })).status;
     expect(last).toBe(429);
-    expect((await req('/api/auth/start', { headers: { 'CF-Connecting-IP': '5.6.7.8' } })).status).toBe(302);
+    expect((await req('/api/auth/start', { headers: { 'CF-Connecting-IP': '5.6.7.8', 'X-Test-Rate-Limit': '1' } })).status).toBe(302);
   });
 });
 

@@ -210,6 +210,7 @@ export function Toolbar({ editor, ctx, compact }: { editor: Editor; ctx: Toolbar
           return (
             <MenuItem
               key={it.id}
+              data-testid={`tbm-${it.id}`}
               selected={c.isActive?.(editor)}
               disabled={c.isDisabled?.(editor)}
               onClick={() => {
